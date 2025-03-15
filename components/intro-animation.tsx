@@ -2,17 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { FaDatabase, FaCalendar, FaTools, FaGlobe, FaRobot, FaServer, FaChartLine, FaUser } from 'react-icons/fa'
-
-const tools = [
-  { Icon: FaRobot, delay: 0.2},      // Chatbot
-  { Icon: FaTools, delay: 0.4},       // Tools
-  { Icon: FaServer, delay: 0.6},      // Server
-  { Icon: FaUser, delay: 0.8},      // User
-  { Icon: FaDatabase, delay: 1.0},    // Database
-  { Icon: FaGlobe, delay: 1.2},       // Web
-  { Icon: FaChartLine, delay: 1.4},   // Analytics
-]
+import ForceGraph from './force-graph'
 
 const messages = [
   "Welcome to Pedro Loes portfolio",
@@ -89,7 +79,12 @@ export default function IntroAnimation({ onComplete }: { onComplete: () => void 
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-white z-50 flex items-center justify-center"
     >
-      <div className="text-center max-w-2xl px-4">
+      {/* Add the force graph as a background */}
+      <div className="absolute inset-0 z-0">
+        <ForceGraph />
+      </div>
+      
+      <div className="text-center max-w-2xl px-4 z-10">
         <motion.div
           className="text-3xl font-bold text-gray-800 mb-16 h-20 flex items-center justify-center"
         >
@@ -101,28 +96,6 @@ export default function IntroAnimation({ onComplete }: { onComplete: () => void 
 
         {showElements && (
           <>
-            {/* Tools Animation */}
-            <div className="flex justify-center gap-12 mb-16">
-              {tools.map(({ Icon, delay }, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{
-                    duration: 0.5,
-                    delay: delay,
-                    type: "spring",
-                    stiffness: 100
-                  }}
-                >
-                  <Icon 
-                    className={`text-gray-700`} 
-                    style={{ width: '25px', height: '25px' }}
-                  />
-                </motion.div>
-              ))}
-            </div>
-
             {/* Input Field with synchronized placeholder */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
