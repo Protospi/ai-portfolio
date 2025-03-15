@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import ForceGraph from './force-graph'
 
@@ -32,6 +32,7 @@ export default function IntroAnimation({ onComplete }: { onComplete: () => void 
   const [showElements, setShowElements] = useState(false)
   const [isTyping, setIsTyping] = useState(true)
   const [isDeletingMessage, setIsDeletingMessage] = useState(false)
+  const [isPulsing, setIsPulsing] = useState(true)
 
   useEffect(() => {
     let typingTimer: NodeJS.Timeout
@@ -69,6 +70,16 @@ export default function IntroAnimation({ onComplete }: { onComplete: () => void 
 
     return () => clearTimeout(typingTimer)
   }, [typedMessage, currentMessageIndex, isTyping, isDeletingMessage, showElements])
+
+  useEffect(() => {
+    if (showElements) {
+      const pulseInterval = setInterval(() => {
+        setIsPulsing(prev => !prev);
+      }, 2000);
+      
+      return () => clearInterval(pulseInterval);
+    }
+  }, [showElements]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -116,14 +127,51 @@ export default function IntroAnimation({ onComplete }: { onComplete: () => void 
               />
             </motion.div>
 
-            {/* Start Button */}
+            {/* Start Button - Enhanced photorealistic button with pulsing effect */}
             <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={onComplete}
-              className="px-8 py-3 bg-gray-800 text-white rounded-full hover:bg-gray-700 transition-colors"
+              className="relative w-16 h-16 rounded-full bg-gradient-to-br from-gray-800 to-black shadow-lg hover:shadow-xl transition-all duration-300 group"
+              style={{
+                boxShadow: '0 10px 25px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.2), inset 0 -3px 6px rgba(0,0,0,0.4)'
+              }}
+              whileTap={{ scale: 0.95 }}
             >
-              Start
+              {/* Outer ring highlight */}
+              <div className="absolute inset-0.5 rounded-full bg-gradient-to-br from-gray-600 to-gray-900 opacity-80"></div>
+              
+              {/* Inner circle with gradient */}
+              <div className="absolute inset-2 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center"
+                style={{
+                  boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.6)'
+                }}>
+                {/* Center dot with pulsing effect */}
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-600 to-gray-800 flex items-center justify-center shadow-inner">
+                  <motion.div 
+                    className="w-4 h-4 rounded-full"
+                    animate={{
+                      backgroundColor: isPulsing ? '#f87171' : '#ffffff',
+                      boxShadow: isPulsing 
+                        ? '0 0 15px 2px rgba(239,68,68,0.7), 0 0 5px 1px rgba(239,68,68,0.9) inset' 
+                        : '0 0 5px 1px rgba(255,255,255,0.7), 0 0 2px 1px rgba(255,255,255,0.9) inset'
+                    }}
+                    transition={{ duration: 1, ease: "easeInOut" }}
+                  ></motion.div>
+                </div>
+              </div>
+              
+              {/* Highlight effect - top reflection */}
+              <div className="absolute top-0.5 left-2 right-2 h-1/4 bg-gradient-to-br from-white to-transparent opacity-30 rounded-t-full"></div>
+              
+              {/* Side reflection */}
+              <div className="absolute top-1/4 bottom-1/4 right-1 w-1 bg-gradient-to-t from-transparent via-white to-transparent opacity-20 rounded-full"></div>
+              
+              {/* Bottom shadow */}
+              <div className="absolute bottom-1 left-3 right-3 h-1 bg-black opacity-30 rounded-full blur-sm"></div>
+              
+              {/* Hover effect - subtle glow */}
+              <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-40 bg-red-500 blur-md transition-opacity duration-300"></div>
             </motion.button>
           </>
         )}
