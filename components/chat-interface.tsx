@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Send, Globe, Hotel, Calendar, ShoppingCart } from "lucide-react"
+import { Send, Globe, Hotel, Calendar, ShoppingCart, LucideHotel } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ChatMessage from "@/components/chat-message"
@@ -46,12 +46,12 @@ export default function ChatInterface({ isDrawerOpen }: ChatInterfaceProps) {
 
   return (
     <div
-      className={`flex flex-col h-full transition-all duration-300 ease-in-out ${
+      className={`flex flex-col h-full transition-all duration-300 ease-in-out bg-[#f5f5f7] p-4 ${
         isDrawerOpen ? "hidden" : "block w-full"
       }`}
     >
       {/* Agent Selection Header */}
-      <div className="border-b p-4 flex items-center">
+      <div className="bg-[#f5f5f7] mb-4">
         <div className="w-10"></div>
         <div className="flex-1 flex justify-center">
           <div className="flex space-x-20">
@@ -62,7 +62,7 @@ export default function ChatInterface({ isDrawerOpen }: ChatInterfaceProps) {
               className="rounded-full"
               aria-label="Website Agent"
             >
-              <Globe className="h-8 w-8" />
+              <Globe className="h-6 w-6" />
             </Button>
             <Button
               variant={activeAgent === "concierge" ? "default" : "ghost"}
@@ -71,7 +71,7 @@ export default function ChatInterface({ isDrawerOpen }: ChatInterfaceProps) {
               className="rounded-full"
               aria-label="Hotel Concierge Agent"
             >
-              <Hotel className="h-8 w-8" />
+              <Hotel className="h-5 w-5" />
             </Button>
             <Button
               variant={activeAgent === "scheduler" ? "default" : "ghost"}
@@ -80,7 +80,7 @@ export default function ChatInterface({ isDrawerOpen }: ChatInterfaceProps) {
               className="rounded-full"
               aria-label="Scheduler Agent"
             >
-              <Calendar className="h-8 w-8" />
+              <Calendar className="h-5 w-5" />
             </Button>
             <Button
               variant={activeAgent === "seller" ? "default" : "ghost"}
@@ -89,31 +89,36 @@ export default function ChatInterface({ isDrawerOpen }: ChatInterfaceProps) {
               className="rounded-full"
               aria-label="Seller Agent"
             >
-            <ShoppingCart className="h-8 w-8" />
+              <ShoppingCart className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-2">
-        {messages.map((message, index) => (
-          <ChatMessage key={index} message={message} />
-        ))}
-      </div>
-
-      <form onSubmit={handleSendMessage} className="border-t p-4">
-        <div className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1"
-          />
-          <Button type="submit" size="icon">
-            <Send className="h-4 w-4" />
-          </Button>
+      {/* Chat Card Container */}
+      <div className="flex-1 bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden">
+        {/* Messages Container */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          {messages.map((message, index) => (
+            <ChatMessage key={index} message={message} />
+          ))}
         </div>
-      </form>
+
+        {/* Input Form */}
+        <form onSubmit={handleSendMessage} className="p-4 bg-white">
+          <div className="flex gap-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your message..."
+              className="flex-1"
+            />
+            <Button type="submit" size="icon">
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 } 

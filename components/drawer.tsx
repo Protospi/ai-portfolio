@@ -23,7 +23,7 @@ export default function Drawer({ isOpen, onClose }: DrawerProps) {
     <div className="bg-gray-900 text-white h-full w-full absolute inset-0">
       <div className="h-full flex flex-col">
         {/* Drawer Header with Navigation */}
-        <div className="border-b border-gray-700 p-4">
+        <div className="p-4">
           <div className="flex items-center">
             {/* Empty div for left side balance */}
             <div className="w-10"></div>
@@ -112,7 +112,12 @@ export default function Drawer({ isOpen, onClose }: DrawerProps) {
         </div>
 
         {/* Empty content area */}
-        <div className="flex-1 p-6">{/* Content will be added later based on the selected section */}</div>
+        <div className="flex-1 px-6 pt-2 pb-4">
+          <div className="bg-black rounded-2xl shadow-lg h-full flex flex-col overflow-hidden border border-gray-800 shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+            {/* Content will be added later */}
+          </div>
+        </div>
+
       </div>
     </div>
   )
