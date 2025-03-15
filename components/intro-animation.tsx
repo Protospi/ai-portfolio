@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react'
 import ForceGraph from './force-graph'
 
 const messages = [
-  "Welcome to Pedro Loes portfolio",
-  "Bienvenido a portfolio de Pedro Loes",
-  "Bem-vindo ao portfolio do Pedro Loes",
-  "欢迎来到 Pedro Loes 的简历",
-  "Willkommen in der Portfolio von Pedro Loes",
-  "Bienvenue dans le portfolio de Pedro Loes",
-  "日本語のポートフォリオです",
+  "Welcome to my portfolio",
+  "Bienvenido a mi portfolio",
+  "Bem-vindo ao meu portfolio",
+  "欢迎来到我的简历",
+  "Willkommen in meinem Portfolio",
+  "Bienvenue dans mon portfolio",
+  "こんにちは、私のポートフォリオです",
 ]
 
 const placeholders = [
