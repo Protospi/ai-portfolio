@@ -70,6 +70,12 @@ export default function IntroAnimation({ onComplete }: { onComplete: () => void 
     return () => clearTimeout(typingTimer)
   }, [typedMessage, currentMessageIndex, isTyping, isDeletingMessage, showElements])
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      onComplete()
+    }
+  }
+
   if (!show) return null
 
   return (
@@ -86,7 +92,7 @@ export default function IntroAnimation({ onComplete }: { onComplete: () => void 
       
       <div className="text-center max-w-2xl px-4 z-10">
         <motion.div
-          className="text-3xl font-bold text-gray-800 mb-16 h-20 flex items-center justify-center"
+          className="text-3xl font-bold text-gray-800 mb-24 h-20 flex items-center justify-center"
         >
           <span className="border-r-2 border-gray-800 pr-1" 
             style={{ borderRightColor: isTyping ? undefined : 'transparent' }}>
@@ -100,12 +106,13 @@ export default function IntroAnimation({ onComplete }: { onComplete: () => void 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-12"
+              className="mb-28"
             >
               <input
                 type="text"
                 placeholder={typedPlaceholder}
-                className="w-64 px-4 py-2 rounded-lg border-2 border-gray-300 focus:border-gray-500 focus:outline-none"
+                onKeyDown={handleKeyDown}
+                className="w-64 px-4 py-2 rounded-lg border-2 border-gray-300 focus:border-gray-500 focus:outline-none bg-black text-white placeholder-white::placeholder"
               />
             </motion.div>
 
