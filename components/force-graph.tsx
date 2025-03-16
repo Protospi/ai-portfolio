@@ -22,11 +22,117 @@ import {
 interface Node extends d3.SimulationNodeDatum {
   id: number
   icon: string
+  color?: string
 }
 
 interface Link {
   source: number
   target: number
+}
+
+// Function to get color based on icon type
+function getIconColor(iconName: string): string {
+  switch(iconName) {
+    // Blues
+    case 'cloud': return '#4299E1' // sky blue
+    case 'water': return '#3182CE' // blue
+    case 'waves': return '#2B6CB0' // darker blue
+    case 'airplane': return '#63B3ED' // light blue
+    case 'plane': return '#63B3ED' // light blue
+    case 'satellite': return '#2C5282' // deep blue
+    case 'weather': return '#90CDF4' // very light blue
+    case 'wifi': return '#4299E1' // sky blue
+    
+    // Reds
+    case 'heart': return '#F56565' // red
+    case 'healthcare': return '#E53E3E' // darker red
+    case 'hospital': return '#C53030' // deep red
+    case 'health': return '#FC8181' // light red
+    case 'cross': return '#FEB2B2' // very light red
+    
+    // Greens
+    case 'tree': return '#48BB78' // green
+    case 'mountain': return '#38A169' // darker green
+    case 'globe': return '#68D391' // light green
+    case 'map': return '#9AE6B4' // very light green
+    case 'map-marker': return '#2F855A' // deep green
+    
+    // Yellows/Golds
+    case 'star': return '#ECC94B' // yellow
+    case 'money': return '#D69E2E' // gold
+    case 'currency': return '#F6E05E' // light yellow
+    case 'bank': return '#B7791F' // dark gold
+    case 'idea': return '#FAF089' // very light yellow
+    case 'lightbulb': return '#FAF089' // very light yellow
+    
+    // Purples
+    case 'robot': return '#805AD5' // purple
+    case 'ai': return '#6B46C1' // darker purple
+    case 'controller': return '#9F7AEA' // light purple
+    case 'gamepad': return '#9F7AEA' // light purple
+    
+    // Oranges
+    case 'cat': return '#ED8936' // orange
+    case 'dog': return '#DD6B20' // darker orange
+    case 'bird': return '#F6AD55' // light orange
+    case 'dumbbells': return '#C05621' // deep orange
+    
+    // Browns
+    case 'utensils': return '#A0522D' // brown
+    case 'chef-hat': return '#8B4513' // dark brown
+    
+    // Pinks
+    case 'camera': return '#D53F8C' // pink
+    case 'image': return '#ED64A6' // light pink
+    
+    // Teals
+    case 'database': return '#38B2AC' // teal
+    case 'server': return '#319795' // darker teal
+    case 'api': return '#4FD1C5' // light teal
+    case 'code': return '#4FD1C5' // light teal
+    
+    // Grays
+    case 'lock': return '#718096' // gray
+    case 'shield': return '#4A5568' // darker gray
+    case 'fingerprint': return '#A0AEC0' // light gray
+    case 'construction': return '#2D3748' // very dark gray
+    case 'hardhat': return '#2D3748' // very dark gray
+    
+    // Social Media Colors
+    case 'facebook': return '#3B5998' // facebook blue
+    case 'twitter': return '#1DA1F2' // twitter blue
+    case 'instagram': return '#E1306C' // instagram pink/purple
+    case 'linkedin': return '#0077B5' // linkedin blue
+    case 'github': return '#333333' // github dark gray
+    case 'google': return '#4285F4' // google blue
+    case 'tiktok': return '#000000' // tiktok black
+    
+    // Other colors
+    case 'user': return '#553C9A' // indigo
+    case 'users': return '#6B46C1' // darker purple
+    case 'car': return '#2C7A7B' // dark teal
+    case 'train': return '#285E61' // darker teal
+    case 'bus': return '#234E52' // darkest teal
+    case 'tools': return '#702459' // dark pink
+    case 'calendar': return '#97266D' // medium pink
+    case 'search': return '#B83280' // light pink
+    case 'microphone': return '#D53F8C' // lighter pink
+    case 'chatbot': return '#667EEA' // indigo
+    case 'display': return '#5A67D8' // darker indigo
+    case 'mobile': return '#4C51BF' // darkest indigo
+    case 'document': return '#7F9CF5' // light indigo
+    case 'chart': return '#4C51BF' // darkest indigo
+    case 'church': return '#744210' // dark yellow
+    case 'translate': return '#975A16' // medium yellow
+    case 'hotel': return '#B7791F' // light yellow
+    case 'cap': return '#F6AD55' // light orange
+    case 'book': return '#9C4221' // dark orange
+    case 'pharmacy': return '#E53E3E' // red
+    case 'cart': return '#C05621' // dark orange
+    
+    // Default
+    default: return '#A0AEC0' // default gray
+  }
 }
 
 export default function ForceGraph() {
@@ -115,6 +221,11 @@ export default function ForceGraph() {
       { id: 68, icon: 'instagram', x: 6*width/10, y: 8*height/10 }
     ]
     
+    // Assign colors to each node based on icon type
+    nodes.forEach(node => {
+      node.color = getIconColor(node.icon)
+    })
+
     // Define links between nodes to form triangular structures with user at center
     const links: Link[] = [
       { source: 0, target: 1 },
@@ -239,9 +350,44 @@ export default function ForceGraph() {
       .data(links)
       .enter().append('line')
       .attr('class', 'link')
-      .style('stroke', '#ccc')
-      .style('stroke-opacity', 0.1)
-      .style('stroke-width', 2)
+      .style('stroke', (d: any) => {
+        const source = nodes.find(n => n.id === d.source) || nodes[0]
+        const target = nodes.find(n => n.id === d.target) || nodes[0]
+        // Use a gradient of the two node colors, or default to a light gray
+        return source.color && target.color ? 
+          `url(#gradient-${source.id}-${target.id})` : 
+          '#ccc'
+      })
+      .style('stroke-opacity', 0.15)
+      .style('stroke-width', 1)
+      
+    // Create gradients for links
+    const defs = svg.append('defs')
+    
+    links.forEach((d: any) => {
+      const source = nodes.find(n => n.id === d.source) || nodes[0]
+      const target = nodes.find(n => n.id === d.target) || nodes[0]
+      
+      if (source.color && target.color) {
+        const gradient = defs.append('linearGradient')
+          .attr('id', `gradient-${source.id}-${target.id}`)
+          .attr('gradientUnits', 'userSpaceOnUse')
+          .attr('x1', source.x || 0)
+          .attr('y1', source.y || 0)
+          .attr('x2', target.x || 0)
+          .attr('y2', target.y || 0)
+          
+        gradient.append('stop')
+          .attr('offset', '0%')
+          .attr('stop-color', source.color)
+          .attr('stop-opacity', 0.4)
+          
+        gradient.append('stop')
+          .attr('offset', '100%')
+          .attr('stop-color', target.color)
+          .attr('stop-opacity', 0.4)
+      }
+    })
 
     // Create the node groups
     const node = nodeGroup.selectAll('.node')
@@ -256,13 +402,23 @@ export default function ForceGraph() {
     // Add circles to each node
     node.append('circle')
       .attr('class', 'node')
-      .attr('r', 30)
-      .style('fill', '#f0f0f0')
-      .style('fill-opacity', 0.2)
-      .style('stroke', '#ddd')
-      .style('stroke-opacity', 0.1)
-      .style('stroke-width', 2)
+      .attr('r', 25)
+      .style('fill', d => d.color ? `${d.color}15` : '#f0f0f015')
+      .style('fill-opacity', 0.15)
+      .style('stroke', d => d.color ? d.color : '#ddd')
+      .style('stroke-opacity', 0.2)
+      .style('stroke-width', 1)
       .style('cursor', 'grab')
+      .style('filter', 'drop-shadow(0px 0px 3px rgba(255, 255, 255, 0.1))')
+      
+    // Add a subtle glow effect
+    node.append('circle')
+      .attr('r', 28)
+      .style('fill', 'none')
+      .style('stroke', d => d.color ? d.color : '#ddd')
+      .style('stroke-opacity', 0.05)
+      .style('stroke-width', 3)
+      .style('filter', 'blur(3px)')
 
     // Add icons to each node using React Icons
     node.each(function(d) {
@@ -286,8 +442,9 @@ export default function ForceGraph() {
       
       // Create a div for the icon
       const iconElement = document.createElement('div')
-      iconElement.style.color = 'rgba(85, 85, 85, 0.2)'
-      iconElement.style.fontSize = '24px'
+      iconElement.style.color = d.color || 'rgba(85, 85, 85, 0.2)'
+      iconElement.style.fontSize = '22px'
+      iconElement.style.opacity = '0.4'
       
       // Map icon names to React Icons components
       let iconSvg
@@ -509,15 +666,29 @@ export default function ForceGraph() {
 
     // Create a simulation with forces - adjust strength and distance for more nodes
     const simulation = d3.forceSimulation<Node>(nodes)
-      .force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(300))
-      .force('charge', d3.forceManyBody().strength(-900))
+      .force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(350))
+      .force('charge', d3.forceManyBody().strength(-600))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(80))
-      .force('x', d3.forceX(width / 2).strength(0.03))
-      .force('y', d3.forceY(height / 2).strength(0.03))
+      .force('collision', d3.forceCollide().radius(100))
+      .force('x', d3.forceX(width / 2).strength(0.02))
+      .force('y', d3.forceY(height / 2).strength(0.02))
 
     // Update the simulation on tick
     simulation.on('tick', () => {
+      // Update gradients as nodes move
+      links.forEach((d: any) => {
+        const source = d.source as unknown as Node
+        const target = d.target as unknown as Node
+        
+        if (source.color && target.color) {
+          svg.select(`#gradient-${source.id}-${target.id}`)
+            .attr('x1', source.x || 0)
+            .attr('y1', source.y || 0)
+            .attr('x2', target.x || 0)
+            .attr('y2', target.y || 0)
+        }
+      })
+      
       // Calculate line endpoints to stop at node boundaries
       svg.selectAll('line')
         .attr('x1', (d: any) => {
@@ -613,26 +784,26 @@ export default function ForceGraph() {
       const randomIndex = Math.floor(Math.random() * (nodes.length - 1)) + 1
       const node = nodes[randomIndex]
       
-      // Apply a stronger random nudge for more movement
-      const nudgeX = (Math.random() - 0.5) * 200
-      const nudgeY = (Math.random() - 0.5) * 200
+      // Apply a gentler random nudge for more subtle movement
+      const nudgeX = (Math.random() - 0.5) * 100 // Reduced from 200
+      const nudgeY = (Math.random() - 0.5) * 100 // Reduced from 200
       
       // Allow more movement but still keep within viewport
       node.fx = Math.max(50, Math.min(width - 50, (node.x || width/2) + nudgeX))
       node.fy = Math.max(50, Math.min(height - 50, (node.y || height/2) + nudgeY))
       
-      // Heat up the simulation more
-      simulation.alpha(0.5).restart()
+      // Heat up the simulation less
+      simulation.alpha(0.3).restart() // Reduced from 0.5
       
       // Release the node after a delay
       setTimeout(() => {
         node.fx = null
         node.fy = null
-      }, 1500)
+      }, 2000) // Increased from 1500
     }
 
     // Move nodes more frequently
-    const movementInterval = setInterval(moveRandomNode, 2000)
+    const movementInterval = setInterval(moveRandomNode, 4000)
 
     // Occasionally apply a larger "shake" to the whole network
     const shakeNetwork = () => {
@@ -642,21 +813,21 @@ export default function ForceGraph() {
         
         // Apply a small force to each node
         const angle = Math.random() * Math.PI * 2
-        const distance = Math.random() * 50
+        const distance = Math.random() * 30
         const nudgeX = Math.cos(angle) * distance
         const nudgeY = Math.sin(angle) * distance
         
         // Apply the force
         if (node.vx && node.vy) {
-          node.vx += nudgeX
-          node.vy += nudgeY
+          node.vx += nudgeX * 0.5
+          node.vy += nudgeY * 0.5
         }
       })
       
-      simulation.alpha(0.3).restart()
+      simulation.alpha(0.2).restart()
     }
 
-    const shakeInterval = setInterval(shakeNetwork, 10000)
+    const shakeInterval = setInterval(shakeNetwork, 15000)
 
     // Function to randomly change connections
     const changeConnections = () => {
@@ -676,9 +847,9 @@ export default function ForceGraph() {
         link => link.source !== 0 && link.target !== 0
       )
       
-      // Randomly remove 5 existing non-user connections
-      if (currentNonUserLinks.length > 5) {
-        const numToRemove = 5;
+      // Randomly remove 2 existing non-user connections (reduced from 5)
+      if (currentNonUserLinks.length > 2) {
+        const numToRemove = 2; // Reduced from 5
         for (let i = 0; i < numToRemove; i++) {
           if (currentNonUserLinks.length > 0) {
             const indexToRemove = Math.floor(Math.random() * currentNonUserLinks.length)
@@ -701,8 +872,8 @@ export default function ForceGraph() {
         }
       }
       
-      // Add 5 new random connections
-      const numToAdd = 5;
+      // Add 2 new random connections (reduced from 5)
+      const numToAdd = 2; // Reduced from 5
       
       // Filter out connections that already exist
       const possibleNewLinks = allPossibleLinks.filter(newLink => 
@@ -724,21 +895,69 @@ export default function ForceGraph() {
       const linkGroup = svg.append('g')
         .attr('class', 'links')
 
+      // Clear existing gradients and create new ones
+      svg.select('defs').remove()
+      const defs = svg.append('defs')
+      
+      links.forEach((d: any) => {
+        const source = nodes.find(n => n.id === d.source) || nodes[0]
+        const target = nodes.find(n => n.id === d.target) || nodes[0]
+        
+        if (source.color && target.color) {
+          const gradient = defs.append('linearGradient')
+            .attr('id', `gradient-${source.id}-${target.id}`)
+            .attr('gradientUnits', 'userSpaceOnUse')
+            .attr('x1', source.x || 0)
+            .attr('y1', source.y || 0)
+            .attr('x2', target.x || 0)
+            .attr('y2', target.y || 0)
+            
+          gradient.append('stop')
+            .attr('offset', '0%')
+            .attr('stop-color', source.color)
+            
+          gradient.append('stop')
+            .attr('offset', '100%')
+            .attr('stop-color', target.color)
+        }
+      })
+
       // Recreate the links
       const link = linkGroup.selectAll('line')
         .data(links)
         .enter().append('line')
         .attr('class', 'link')
-        .style('stroke', '#ccc')
-        .style('stroke-opacity', 0.1)
-        .style('stroke-width', 2)
+        .style('stroke', (d: any) => {
+          const source = nodes.find(n => n.id === d.source) || nodes[0]
+          const target = nodes.find(n => n.id === d.target) || nodes[0]
+          // Use a gradient of the two node colors, or default to a light gray
+          return source.color && target.color ? 
+            `url(#gradient-${source.id}-${target.id})` : 
+            '#ccc'
+        })
+        .style('stroke-opacity', 0.15)
+        .style('stroke-width', 1)
       
       // Update the simulation
-      simulation.force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(300))
-      simulation.alpha(0.5).restart()
+      simulation.force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(350))
+      simulation.alpha(0.2).restart() // Reduced from 0.5
       
       // Make sure the tick function knows about the new links
       simulation.on('tick', () => {
+        // Update gradients as nodes move
+        links.forEach((d: any) => {
+          const source = d.source as unknown as Node
+          const target = d.target as unknown as Node
+          
+          if (source.color && target.color) {
+            svg.select(`#gradient-${source.id}-${target.id}`)
+              .attr('x1', source.x || 0)
+              .attr('y1', source.y || 0)
+              .attr('x2', target.x || 0)
+              .attr('y2', target.y || 0)
+          }
+        })
+        
         svg.selectAll('line')
           .attr('x1', (d: any) => {
             const source = d.source as unknown as Node
@@ -798,8 +1017,8 @@ export default function ForceGraph() {
       })
     }
 
-    // Change connections every second
-    const connectionInterval = setInterval(changeConnections, 1000)
+    // Change connections every 3 seconds
+    const connectionInterval = setInterval(changeConnections, 3000)
 
     // Cleanup
     return () => {
