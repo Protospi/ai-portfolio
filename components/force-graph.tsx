@@ -23,11 +23,14 @@ interface Node extends d3.SimulationNodeDatum {
   id: number
   icon: string
   color?: string
+  clusterId: number  // Add cluster ID to track which network a node belongs to
+  isCore?: boolean   // Flag to identify core nodes (users and robots)
 }
 
 interface Link {
   source: number
   target: number
+  clusterId: number  // Add cluster ID to track which network a link belongs to
 }
 
 // Function to get color based on icon type
@@ -148,190 +151,6 @@ export default function ForceGraph() {
     const width = window.innerWidth
     const height = window.innerHeight
 
-    // Create nodes with different icon types
-    const nodes: Node[] = [
-      { id: 0, icon: 'user', x: width/2, y: height/2 }, // User node at center
-      { id: 1, icon: 'tools', x: width/3, y: height/2 },
-      { id: 2, icon: 'server', x: 2*width/3, y: height/2 },
-      { id: 3, icon: 'robot', x: width/3, y: 2*height/3 },
-      { id: 4, icon: 'database', x: 2*width/3, y: 2*height/3 },
-      { id: 5, icon: 'globe', x: width/2, y: height/3 },
-      { id: 6, icon: 'chart', x: width/2, y: 2*height/3 },
-      { id: 7, icon: 'mobile', x: width/4, y: height/3 },
-      { id: 8, icon: 'cloud', x: 3*width/4, y: height/3 },
-      { id: 9, icon: 'api', x: width/4, y: 2*height/3 },
-      { id: 10, icon: 'display', x: 3*width/4, y: 2*height/3 },
-      { id: 11, icon: 'chatbot', x: width/3, y: height/4 },
-      { id: 12, icon: 'map', x: 2*width/3, y: height/4 },
-      { id: 13, icon: 'camera', x: width/3, y: 3*height/4 },
-      { id: 14, icon: 'car', x: 2*width/3, y: 3*height/4 },
-      { id: 15, icon: 'users', x: width/4, y: height/2 },
-      { id: 16, icon: 'document', x: 3*width/4, y: height/2 },
-      { id: 17, icon: 'search', x: width/2, y: height/4 },
-      { id: 18, icon: 'microphone', x: width/2, y: 3*height/4 },
-      { id: 19, icon: 'calendar', x: width/5, y: height/5 },
-      { id: 20, icon: 'tree', x: 4*width/5, y: height/5 },
-      { id: 21, icon: 'waves', x: width/6, y: 4*height/5 },
-      { id: 22, icon: 'health', x: 5*width/6, y: 4*height/5 },
-      { id: 23, icon: 'map-marker', x: 3*width/10, y: height/10 },
-      { id: 24, icon: 'cart', x: 7*width/10, y: height/10 },
-      { id: 25, icon: 'church', x: width/2, y: 9*height/10 },
-      { id: 26, icon: 'translate', x: width/8, y: height/8 },
-      { id: 27, icon: 'image', x: 7*width/8, y: height/8 },
-      { id: 28, icon: 'heart', x: width/8, y: 7*height/8 },
-      { id: 29, icon: 'hotel', x: 7*width/8, y: 7*height/8 },
-      { id: 30, icon: 'train', x: 3*width/8, y: height/8 },
-      { id: 31, icon: 'cap', x: 5*width/8, y: height/8 },
-      { id: 32, icon: 'bus', x: 3*width/8, y: 7*height/8 },
-      { id: 33, icon: 'shield', x: 5*width/8, y: 7*height/8 },
-      { id: 34, icon: 'wifi', x: width/10, y: 3*height/10 },
-      { id: 35, icon: 'controller', x: 9*width/10, y: 3*height/10 },
-      { id: 36, icon: 'satellite', x: width/10, y: 7*height/10 },
-      { id: 37, icon: 'fingerprint', x: 9*width/10, y: 7*height/10 },
-      { id: 38, icon: 'lock', x: 2*width/10, y: 2*height/10 },
-      { id: 39, icon: 'healthcare', x: 3*width/10, y: 3*height/10 },
-      { id: 40, icon: 'airplane', x: 7*width/10, y: 3*height/10 },
-      { id: 41, icon: 'factory', x: 3*width/10, y: 7*height/10 },
-      { id: 42, icon: 'book', x: 7*width/10, y: 7*height/10 },
-      { id: 43, icon: 'cross', x: 4*width/10, y: 4*height/10 },
-      { id: 44, icon: 'plane', x: 6*width/10, y: 6*height/10 },
-      { id: 45, icon: 'money', x: 4*width/10, y: 6*height/10 },
-      { id: 46, icon: 'bank', x: 6*width/10, y: 4*height/10 },
-      { id: 47, icon: 'utensils', x: 5*width/10, y: 5*height/10 },
-      { id: 48, icon: 'currency', x: 3*width/10, y: 5*height/10 },
-      { id: 49, icon: 'pharmacy', x: 7*width/10, y: 3*height/10 },
-      { id: 50, icon: 'hospital', x: 3*width/10, y: 7*height/10 },
-      { id: 51, icon: 'construction', x: 5*width/10, y: 5*height/10 },
-      { id: 52, icon: 'weather', x: 7*width/10, y: 3*height/10 },
-      { id: 53, icon: 'mountain', x: 3*width/10, y: 7*height/10 },
-      { id: 54, icon: 'dog', x: 5*width/10, y: 5*height/10 },
-      { id: 55, icon: 'cat', x: 7*width/10, y: 5*height/10 },
-      { id: 56, icon: 'bird', x: 3*width/10, y: 3*height/10 },
-      { id: 57, icon: 'chef-hat', x: 5*width/10, y: 3*height/10 },
-      { id: 58, icon: 'dumbbells', x: 7*width/10, y: 5*height/10 },
-      { id: 59, icon: 'idea', x: 3*width/10, y: 5*height/10 },
-      { id: 60, icon: 'star', x: 5*width/10, y: 7*height/10 },
-      { id: 61, icon: 'facebook', x: 2*width/10, y: 2*height/10 },
-      { id: 62, icon: 'github', x: 8*width/10, y: 2*height/10 },
-      { id: 63, icon: 'tiktok', x: 2*width/10, y: 8*height/10 },
-      { id: 64, icon: 'twitter', x: 8*width/10, y: 8*height/10 },
-      { id: 65, icon: 'ai', x: 4*width/10, y: 2*height/10 },
-      { id: 66, icon: 'google', x: 6*width/10, y: 2*height/10 },
-      { id: 67, icon: 'linkedin', x: 4*width/10, y: 8*height/10 },
-      { id: 68, icon: 'instagram', x: 6*width/10, y: 8*height/10 }
-    ]
-    
-    // Assign colors to each node based on icon type
-    nodes.forEach(node => {
-      node.color = getIconColor(node.icon)
-    })
-
-    // Define links between nodes to form triangular structures with user at center
-    const links: Link[] = [
-      { source: 0, target: 1 },
-      { source: 0, target: 2 },
-      { source: 0, target: 3 },
-      { source: 0, target: 4 },
-      { source: 0, target: 5 },
-      { source: 0, target: 6 }, // User connected to all nodes
-      { source: 0, target: 7 },
-      { source: 0, target: 8 },
-      { source: 0, target: 9 },
-      { source: 0, target: 10 },
-      { source: 0, target: 11 },
-      { source: 0, target: 12 },
-      { source: 0, target: 13 },
-      { source: 0, target: 14 },
-      { source: 0, target: 15 },
-      { source: 0, target: 16 },
-      { source: 0, target: 17 },
-      { source: 0, target: 18 },
-      { source: 0, target: 19 },
-      { source: 0, target: 20 },
-      { source: 1, target: 5 },
-      { source: 2, target: 5 },
-      { source: 3, target: 1 },
-      { source: 4, target: 2 },
-      { source: 7, target: 11 },
-      { source: 8, target: 2 },
-      { source: 9, target: 2 },
-      { source: 10, target: 6 },
-      { source: 11, target: 3 },
-      { source: 12, target: 5 },
-      { source: 15, target: 17 },
-      { source: 16, target: 6 },
-      { source: 17, target: 16 },
-      { source: 18, target: 11 },
-      { source: 19, target: 11 },
-      { source: 20, target: 12 },
-      { source: 20, target: 8 },
-      { source: 21, target: 14 },
-      { source: 22, target: 15 },
-      { source: 23, target: 12 },
-      { source: 24, target: 16 },
-      { source: 25, target: 13 },
-      { source: 0, target: 26 },
-      { source: 0, target: 27 },
-      { source: 0, target: 28 },
-      { source: 0, target: 29 },
-      { source: 0, target: 30 },
-      { source: 0, target: 31 },
-      { source: 0, target: 32 },
-      { source: 0, target: 33 },
-      { source: 26, target: 5 },
-      { source: 27, target: 13 },
-      { source: 28, target: 22 },
-      { source: 29, target: 25 },
-      { source: 30, target: 14 },
-      { source: 31, target: 16 },
-      { source: 32, target: 14 },
-      { source: 33, target: 4 },
-      { source: 33, target: 34 },
-      { source: 33, target: 35 },
-      { source: 33, target: 36 },
-      { source: 33, target: 37 },
-      { source: 33, target: 38 },
-      { source: 34, target: 8 },
-      { source: 35, target: 10 },
-      { source: 36, target: 5 },
-      { source: 37, target: 33 },
-      { source: 38, target: 33 },
-      { source: 39, target: 22 }, // healthcare to health
-      { source: 40, target: 5 },  // airplane to globe
-      { source: 41, target: 1 },  // factory to tools
-      { source: 42, target: 16 }, // book to document
-      { source: 43, target: 22 }, // cross to health
-      { source: 44, target: 40 }, // plane to airplane
-      { source: 0, target: 45 },  // user to money
-      { source: 0, target: 46 },  // user to bank
-      { source: 0, target: 47 },  // user to utensils
-      { source: 0, target: 48 },  // user to currency
-      { source: 45, target: 24 }, // money to cart
-      { source: 46, target: 4 },  // bank to database
-      { source: 47, target: 25 }, // utensils to church
-      { source: 48, target: 45 },  // currency to money
-      { source: 49, target: 24 }, // pharmacy to cart
-      { source: 50, target: 4 },  // hospital to database
-      { source: 51, target: 25 }, // construction to church
-      { source: 52, target: 45 }, // weather to cart
-      { source: 53, target: 24 }, // mountain to cart
-      { source: 54, target: 45 }, // dog to cart
-      { source: 55, target: 45 }, // cat to cart
-      { source: 56, target: 45 }, // bird to cart
-      { source: 57, target: 25 }, // chef hat to church
-      { source: 58, target: 45 }, // dumbbells to cart
-      { source: 59, target: 25 }, // idea to church
-      { source: 60, target: 45 },  // star to cart
-      { source: 61, target: 5 },  // facebook to globe
-      { source: 62, target: 2 },  // github to server
-      { source: 63, target: 5 },  // tiktok to globe
-      { source: 64, target: 5 },  // twitter to globe
-      { source: 65, target: 3 },  // ai to robot
-      { source: 66, target: 5 },  // google to globe
-      { source: 67, target: 15 }, // linkedin to users
-      { source: 68, target: 27 }  // instagram to image
-    ]
-
     // Create the SVG container
     const svg = d3.select(svgRef.current)
       .attr('width', width)
@@ -345,563 +164,306 @@ export default function ForceGraph() {
     const nodeGroup = svg.append('g')
       .attr('class', 'nodes')
 
-    // Create the links
-    const link = linkGroup.selectAll('line')
-      .data(links)
-      .enter().append('line')
-      .attr('class', 'link')
-      .style('stroke', (d: any) => {
-        const source = nodes.find(n => n.id === d.source) || nodes[0]
-        const target = nodes.find(n => n.id === d.target) || nodes[0]
-        // Use a gradient of the two node colors, or default to a light gray
-        return source.color && target.color ? 
-          `url(#gradient-${source.id}-${target.id})` : 
-          '#ccc'
-      })
-      .style('stroke-opacity', 0.15)
-      .style('stroke-width', 1)
-      
-    // Create gradients for links
+    // Create defs for gradients
     const defs = svg.append('defs')
+
+    // Initialize node counter for unique IDs
+    let nextNodeId = 0
     
-    links.forEach((d: any) => {
-      const source = nodes.find(n => n.id === d.source) || nodes[0]
-      const target = nodes.find(n => n.id === d.target) || nodes[0]
-      
-      if (source.color && target.color) {
-        const gradient = defs.append('linearGradient')
-          .attr('id', `gradient-${source.id}-${target.id}`)
-          .attr('gradientUnits', 'userSpaceOnUse')
-          .attr('x1', source.x || 0)
-          .attr('y1', source.y || 0)
-          .attr('x2', target.x || 0)
-          .attr('y2', target.y || 0)
-          
-        gradient.append('stop')
-          .attr('offset', '0%')
-          .attr('stop-color', source.color)
-          .attr('stop-opacity', 0.4)
-          
-        gradient.append('stop')
-          .attr('offset', '100%')
-          .attr('stop-color', target.color)
-          .attr('stop-opacity', 0.4)
+    // Initialize arrays to store all nodes and links
+    const nodes: Node[] = []
+    const links: Link[] = []
+    
+    // Track active clusters
+    const activeClusters = new Set<number>()
+    
+    // Available icon types for tools (excluding user and robot)
+    const toolIcons = [
+      'tools', 'server', 'database', 'globe', 'chart', 'mobile', 
+      'cloud', 'api', 'display', 'chatbot', 'map', 'camera', 
+      'car', 'document', 'search', 'microphone', 'calendar', 
+      'tree', 'waves', 'health', 'map-marker', 'cart', 'church', 
+      'translate', 'image', 'heart', 'hotel', 'train', 'cap', 
+      'bus', 'shield', 'wifi', 'controller', 'satellite', 
+      'fingerprint', 'lock', 'healthcare', 'airplane', 'book', 
+      'cross', 'plane', 'money', 'bank', 'utensils', 'currency', 
+      'pharmacy', 'hospital', 'construction', 'weather', 'mountain', 
+      'dog', 'cat', 'bird', 'chef-hat', 'dumbbells', 'idea', 'star'
+    ]
+    
+    // Function to create a random position on the screen
+    const getRandomPosition = () => {
+      // Keep positions away from the edges
+      const margin = 100
+      return {
+        x: margin + Math.random() * (width - 2 * margin),
+        y: margin + Math.random() * (height - 2 * margin)
       }
-    })
-
-    // Create the node groups
-    const node = nodeGroup.selectAll('.node')
-      .data(nodes)
-      .enter().append('g')
-      .attr('class', 'node-group')
-      .call(d3.drag<SVGGElement, Node>()
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended) as any)
-
-    // Add circles to each node
-    node.append('circle')
-      .attr('class', 'node')
-      .attr('r', 25)
-      .style('fill', d => d.color ? `${d.color}15` : '#f0f0f015')
-      .style('fill-opacity', 0.15)
-      .style('stroke', d => d.color ? d.color : '#ddd')
-      .style('stroke-opacity', 0.2)
-      .style('stroke-width', 1)
-      .style('cursor', 'grab')
-      .style('filter', 'drop-shadow(0px 0px 3px rgba(255, 255, 255, 0.1))')
+    }
+    
+    // Function to create a new cluster
+    const createCluster = () => {
+      const clusterId = Math.floor(Math.random() * 10000) // Random cluster ID
+      activeClusters.add(clusterId)
       
-    // Add a subtle glow effect
-    node.append('circle')
-      .attr('r', 28)
-      .style('fill', 'none')
-      .style('stroke', d => d.color ? d.color : '#ddd')
-      .style('stroke-opacity', 0.05)
-      .style('stroke-width', 3)
-      .style('filter', 'blur(3px)')
-
-    // Add icons to each node using React Icons
-    node.each(function(d) {
-      const iconGroup = d3.select(this)
+      const clusterCenter = getRandomPosition()
       
-      // Create a foreignObject to embed React Icons
-      const fo = iconGroup.append('foreignObject')
-        .attr('width', 40)
-        .attr('height', 40)
-        .attr('x', -20)
-        .attr('y', -20)
-        .style('pointer-events', 'none')
+      // Create 1-2 user nodes
+      const userCount = Math.floor(Math.random() * 2) + 1
+      const userNodes: Node[] = []
       
-      // Create a div inside the foreignObject
-      const div = fo.append('xhtml:div')
-        .style('width', '100%')
-        .style('height', '100%')
-        .style('display', 'flex')
-        .style('align-items', 'center')
-        .style('justify-content', 'center')
-      
-      // Create a div for the icon
-      const iconElement = document.createElement('div')
-      iconElement.style.color = d.color || 'rgba(85, 85, 85, 0.2)'
-      iconElement.style.fontSize = '22px'
-      iconElement.style.opacity = '0.4'
-      
-      // Map icon names to React Icons components
-      let iconSvg
-      switch(d.icon) {
-        case 'database':
-          iconSvg = renderToStaticMarkup(<FaDatabase />)
-          break
-        case 'calendar':
-          iconSvg = renderToStaticMarkup(<FaCalendar />)
-          break
-        case 'tools':
-          iconSvg = renderToStaticMarkup(<FaTools />)
-          break
-        case 'globe':
-          iconSvg = renderToStaticMarkup(<FaGlobe />)
-          break
-        case 'robot':
-          iconSvg = renderToStaticMarkup(<FaRobot />)
-          break
-        case 'server':
-          iconSvg = renderToStaticMarkup(<FaServer />)
-          break
-        case 'chart':
-          iconSvg = renderToStaticMarkup(<FaChartLine />)
-          break
-        case 'user':
-          iconSvg = renderToStaticMarkup(<FaUser />)
-          break
-        case 'mobile':
-          iconSvg = renderToStaticMarkup(<FaMobile />)
-          break
-        case 'cloud':
-          iconSvg = renderToStaticMarkup(<FaCloud />)
-          break
-        case 'api':
-          iconSvg = renderToStaticMarkup(<FaCode />)
-          break
-        case 'display':
-          iconSvg = renderToStaticMarkup(<FaDesktop />)
-          break
-        case 'chatbot':
-          iconSvg = renderToStaticMarkup(<FaComments />)
-          break
-        case 'map':
-          iconSvg = renderToStaticMarkup(<FaMap />)
-          break
-        case 'camera':
-          iconSvg = renderToStaticMarkup(<FaCamera />)
-          break
-        case 'car':
-          iconSvg = renderToStaticMarkup(<FaCar />)
-          break
-        case 'users':
-          iconSvg = renderToStaticMarkup(<FaUsers />)
-          break
-        case 'document':
-          iconSvg = renderToStaticMarkup(<FaFileAlt />)
-          break
-        case 'search':
-          iconSvg = renderToStaticMarkup(<FaSearch />)
-          break
-        case 'microphone':
-          iconSvg = renderToStaticMarkup(<FaMicrophone />)
-          break
-        case 'tree':
-          iconSvg = renderToStaticMarkup(<FaTree />)
-          break
-        case 'waves':
-          iconSvg = renderToStaticMarkup(<FaWater />)
-          break
-        case 'health':
-          iconSvg = renderToStaticMarkup(<FaHeartbeat />)
-          break
-        case 'map-marker':
-          iconSvg = renderToStaticMarkup(<FaMapMarkerAlt />)
-          break
-        case 'cart':
-          iconSvg = renderToStaticMarkup(<FaShoppingCart />)
-          break
-        case 'church':
-          iconSvg = renderToStaticMarkup(<FaChurch />)
-          break
-        case 'translate':
-          iconSvg = renderToStaticMarkup(<FaLanguage />)
-          break
-        case 'image':
-          iconSvg = renderToStaticMarkup(<FaImage />)
-          break
-        case 'heart':
-          iconSvg = renderToStaticMarkup(<FaHeart />)
-          break
-        case 'hotel':
-          iconSvg = renderToStaticMarkup(<FaHotel />)
-          break
-        case 'train':
-          iconSvg = renderToStaticMarkup(<FaTrain />)
-          break
-        case 'cap':
-          iconSvg = renderToStaticMarkup(<FaGraduationCap />)
-          break
-        case 'bus':
-          iconSvg = renderToStaticMarkup(<FaBus />)
-          break
-        case 'shield':
-          iconSvg = renderToStaticMarkup(<FaShieldAlt />)
-          break
-        case 'wifi':
-          iconSvg = renderToStaticMarkup(<FaWifi />)
-          break
-        case 'controller':
-          iconSvg = renderToStaticMarkup(<FaGamepad />)
-          break
-        case 'satellite':
-          iconSvg = renderToStaticMarkup(<FaSatellite />)
-          break
-        case 'fingerprint':
-          iconSvg = renderToStaticMarkup(<FaFingerprint />)
-          break
-        case 'lock':
-          iconSvg = renderToStaticMarkup(<FaLock />)
-          break
-        case 'healthcare':
-          iconSvg = renderToStaticMarkup(<FaHospital />)
-          break
-        case 'airplane':
-          iconSvg = renderToStaticMarkup(<FaPlane />)
-          break
-        case 'book':
-          iconSvg = renderToStaticMarkup(<FaBook />)
-          break
-        case 'cross':
-          iconSvg = renderToStaticMarkup(<FaCross />)
-          break
-        case 'plane':
-          iconSvg = renderToStaticMarkup(<FaPlane />)
-          break
-        case 'money':
-          iconSvg = renderToStaticMarkup(<FaMoneyBill />)
-          break
-        case 'bank':
-          iconSvg = renderToStaticMarkup(<FaUniversity />)
-          break
-        case 'utensils':
-          iconSvg = renderToStaticMarkup(<FaUtensils />)
-          break
-        case 'currency':
-          iconSvg = renderToStaticMarkup(<FaDollarSign />)
-          break
-        case 'pharmacy':
-          iconSvg = renderToStaticMarkup(<FaPrescriptionBottleAlt />)
-          break
-        case 'hospital':
-          iconSvg = renderToStaticMarkup(<FaHospital />)
-          break
-        case 'construction':
-          iconSvg = renderToStaticMarkup(<FaHardHat />)
-          break
-        case 'weather':
-          iconSvg = renderToStaticMarkup(<FaCloudSun />)
-          break
-        case 'mountain':
-          iconSvg = renderToStaticMarkup(<FaMountain />)
-          break
-        case 'dog':
-          iconSvg = renderToStaticMarkup(<FaDog />)
-          break
-        case 'cat':
-          iconSvg = renderToStaticMarkup(<FaCat />)
-          break
-        case 'bird':
-          iconSvg = renderToStaticMarkup(<FaDove />)
-          break
-        case 'chef-hat':
-          iconSvg = renderToStaticMarkup(<FaUtensils />)  // Using utensils as substitute
-          break
-        case 'dumbbells':
-          iconSvg = renderToStaticMarkup(<FaDumbbell />)
-          break
-        case 'idea':
-          iconSvg = renderToStaticMarkup(<FaLightbulb />)
-          break
-        case 'star':
-          iconSvg = renderToStaticMarkup(<FaStar />)
-          break
-        case 'facebook':
-          iconSvg = renderToStaticMarkup(<FaFacebook />)
-          break
-        case 'github':
-          iconSvg = renderToStaticMarkup(<FaGithub />)
-          break
-        case 'tiktok':
-          iconSvg = renderToStaticMarkup(<FaTiktok />)
-          break
-        case 'twitter':
-          iconSvg = renderToStaticMarkup(<FaTwitter />)
-          break
-        case 'ai':
-          iconSvg = renderToStaticMarkup(<FaRobot />)  // Using robot icon for AI
-          break
-        case 'google':
-          iconSvg = renderToStaticMarkup(<FaGoogle />)
-          break
-        case 'linkedin':
-          iconSvg = renderToStaticMarkup(<FaLinkedin />)
-          break
-        case 'instagram':
-          iconSvg = renderToStaticMarkup(<FaInstagram />)
-          break
-        default:
-          iconSvg = renderToStaticMarkup(<FaGlobe />)
+      for (let i = 0; i < userCount; i++) {
+        const userNode: Node = {
+          id: nextNodeId++,
+          icon: 'user',
+          clusterId,
+          isCore: true,
+          x: clusterCenter.x + (Math.random() - 0.5) * 50,
+          y: clusterCenter.y + (Math.random() - 0.5) * 50
+        }
+        userNodes.push(userNode)
+        nodes.push(userNode)
       }
       
-      iconElement.innerHTML = iconSvg
-      const divNode = div.node() as HTMLElement
-      if (divNode) {
-        divNode.appendChild(iconElement)
+      // Create 1-3 robot nodes
+      const robotCount = Math.floor(Math.random() * 3) + 1
+      const robotNodes: Node[] = []
+      
+      for (let i = 0; i < robotCount; i++) {
+        const robotNode: Node = {
+          id: nextNodeId++,
+          icon: Math.random() > 0.5 ? 'robot' : 'ai',
+          clusterId,
+          isCore: true,
+          x: clusterCenter.x + (Math.random() - 0.5) * 100,
+          y: clusterCenter.y + (Math.random() - 0.5) * 100
+        }
+        robotNodes.push(robotNode)
+        nodes.push(robotNode)
       }
-    })
-
-    // Create a simulation with forces - adjust strength and distance for more nodes
-    const simulation = d3.forceSimulation<Node>(nodes)
-      .force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(350))
-      .force('charge', d3.forceManyBody().strength(-600))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(100))
-      .force('x', d3.forceX(width / 2).strength(0.02))
-      .force('y', d3.forceY(height / 2).strength(0.02))
-
-    // Update the simulation on tick
-    simulation.on('tick', () => {
-      // Update gradients as nodes move
-      links.forEach((d: any) => {
-        const source = d.source as unknown as Node
-        const target = d.target as unknown as Node
+      
+      // Create 5-8 tool nodes
+      const toolCount = Math.floor(Math.random() * 4) + 5 // 5-8 tools
+      const toolNodes: Node[] = []
+      
+      // Shuffle tool icons and pick a subset
+      const shuffledTools = [...toolIcons].sort(() => Math.random() - 0.5).slice(0, toolCount)
+      
+      for (let i = 0; i < toolCount; i++) {
+        const toolNode: Node = {
+          id: nextNodeId++,
+          icon: shuffledTools[i],
+          clusterId,
+          x: clusterCenter.x + (Math.random() - 0.5) * 150,
+          y: clusterCenter.y + (Math.random() - 0.5) * 150
+        }
+        toolNodes.push(toolNode)
+        nodes.push(toolNode)
+      }
+      
+      // Create initial connections
+      
+      // Connect users to robots
+      userNodes.forEach(user => {
+        robotNodes.forEach(robot => {
+          links.push({
+            source: user.id,
+            target: robot.id,
+            clusterId
+          })
+        })
+      })
+      
+      // Connect robots to some tools
+      robotNodes.forEach(robot => {
+        // Each robot connects to 2-4 random tools
+        const toolsToConnect = Math.floor(Math.random() * 3) + 2
+        const shuffledToolNodes = [...toolNodes].sort(() => Math.random() - 0.5)
         
-        if (source.color && target.color) {
-          svg.select(`#gradient-${source.id}-${target.id}`)
-            .attr('x1', source.x || 0)
-            .attr('y1', source.y || 0)
-            .attr('x2', target.x || 0)
-            .attr('y2', target.y || 0)
+        for (let i = 0; i < Math.min(toolsToConnect, shuffledToolNodes.length); i++) {
+          links.push({
+            source: robot.id,
+            target: shuffledToolNodes[i].id,
+            clusterId
+          })
         }
       })
       
-      // Calculate line endpoints to stop at node boundaries
-      svg.selectAll('line')
-        .attr('x1', (d: any) => {
-          const source = d.source as unknown as Node
-          const target = d.target as unknown as Node
-          
-          // Get the direction vector
-          const dx = target.x! - source.x!
-          const dy = target.y! - source.y!
-          const dr = Math.sqrt(dx * dx + dy * dy)
-          
-          // If nodes are on top of each other, just return the source position
-          if (dr === 0) return source.x!
-          
-          // Calculate the point on the edge of the source node
-          // 30 is the node radius
-          return source.x! + dx * 30 / dr
-        })
-        .attr('y1', (d: any) => {
-          const source = d.source as unknown as Node
-          const target = d.target as unknown as Node
-          
-          const dx = target.x! - source.x!
-          const dy = target.y! - source.y!
-          const dr = Math.sqrt(dx * dx + dy * dy)
-          
-          if (dr === 0) return source.y!
-          
-          return source.y! + dy * 30 / dr
-        })
-        .attr('x2', (d: any) => {
-          const source = d.source as unknown as Node
-          const target = d.target as unknown as Node
-          
-          const dx = source.x! - target.x!
-          const dy = source.y! - target.y!
-          const dr = Math.sqrt(dx * dx + dy * dy)
-          
-          if (dr === 0) return target.x!
-          
-          return target.x! + dx * 30 / dr
-        })
-        .attr('y2', (d: any) => {
-          const source = d.source as unknown as Node
-          const target = d.target as unknown as Node
-          
-          const dx = source.x! - target.x!
-          const dy = source.y! - target.y!
-          const dr = Math.sqrt(dx * dx + dy * dy)
-          
-          if (dr === 0) return target.y!
-          
-          return target.y! + dy * 30 / dr
-        })
-
-      node
-        .attr('transform', d => `translate(${d.x}, ${d.y})`)
-    })
-
-    // Drag functions
-    function dragstarted(event: d3.D3DragEvent<SVGGElement, Node, Node>) {
-      if (!event.active) simulation.alphaTarget(0.3).restart()
-      event.subject.fx = event.subject.x
-      event.subject.fy = event.subject.y
-    }
-
-    function dragged(event: d3.D3DragEvent<SVGGElement, Node, Node>) {
-      event.subject.fx = event.x
-      event.subject.fy = event.y
-    }
-
-    function dragended(event: d3.D3DragEvent<SVGGElement, Node, Node>) {
-      if (!event.active) simulation.alphaTarget(0)
-      event.subject.fx = null
-      event.subject.fy = null
-    }
-
-    // Handle window resize
-    const handleResize = () => {
-      const width = window.innerWidth
-      const height = window.innerHeight
-      
-      svg.attr('width', width).attr('height', height)
-      simulation.force('center', d3.forceCenter(width / 2, height / 2))
-      simulation.alpha(0.3).restart()
-    }
-
-    window.addEventListener('resize', handleResize)
-
-    // Add automatic movement with more dynamic behavior
-    const moveRandomNode = () => {
-      // Don't move the user node (id 0)
-      const randomIndex = Math.floor(Math.random() * (nodes.length - 1)) + 1
-      const node = nodes[randomIndex]
-      
-      // Apply a gentler random nudge for more subtle movement
-      const nudgeX = (Math.random() - 0.5) * 100 // Reduced from 200
-      const nudgeY = (Math.random() - 0.5) * 100 // Reduced from 200
-      
-      // Allow more movement but still keep within viewport
-      node.fx = Math.max(50, Math.min(width - 50, (node.x || width/2) + nudgeX))
-      node.fy = Math.max(50, Math.min(height - 50, (node.y || height/2) + nudgeY))
-      
-      // Heat up the simulation less
-      simulation.alpha(0.3).restart() // Reduced from 0.5
-      
-      // Release the node after a delay
-      setTimeout(() => {
-        node.fx = null
-        node.fy = null
-      }, 2000) // Increased from 1500
-    }
-
-    // Move nodes more frequently
-    const movementInterval = setInterval(moveRandomNode, 4000)
-
-    // Occasionally apply a larger "shake" to the whole network
-    const shakeNetwork = () => {
-      nodes.forEach((node, i) => {
-        // Skip the user node
-        if (i === 0) return
-        
-        // Apply a small force to each node
-        const angle = Math.random() * Math.PI * 2
-        const distance = Math.random() * 30
-        const nudgeX = Math.cos(angle) * distance
-        const nudgeY = Math.sin(angle) * distance
-        
-        // Apply the force
-        if (node.vx && node.vy) {
-          node.vx += nudgeX * 0.5
-          node.vy += nudgeY * 0.5
-        }
-      })
-      
-      simulation.alpha(0.2).restart()
-    }
-
-    const shakeInterval = setInterval(shakeNetwork, 15000)
-
-    // Function to randomly change connections
-    const changeConnections = () => {
-      // Keep track of all possible connections
-      const allPossibleLinks: Link[] = []
-      
-      // Generate all possible connections except for user node (id 0)
-      // User node should always stay connected to all other nodes
-      for (let i = 1; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          allPossibleLinks.push({ source: i, target: j })
+      // Connect robots to each other
+      if (robotNodes.length > 1) {
+        for (let i = 0; i < robotNodes.length - 1; i++) {
+          links.push({
+            source: robotNodes[i].id,
+            target: robotNodes[i + 1].id,
+            clusterId
+          })
         }
       }
       
-      // Filter out current non-user links
-      const currentNonUserLinks = links.filter(
-        link => link.source !== 0 && link.target !== 0
-      )
-      
-      // Randomly remove 2 existing non-user connections (reduced from 5)
-      if (currentNonUserLinks.length > 2) {
-        const numToRemove = 2; // Reduced from 5
-        for (let i = 0; i < numToRemove; i++) {
-          if (currentNonUserLinks.length > 0) {
-            const indexToRemove = Math.floor(Math.random() * currentNonUserLinks.length)
-            const linkToRemove = currentNonUserLinks[indexToRemove]
-            
-            // Find and remove this link from the main links array
-            const mainIndex = links.findIndex(
-              link => 
-                (link.source === linkToRemove.source && link.target === linkToRemove.target) ||
-                (link.source === linkToRemove.target && link.target === linkToRemove.source)
-            )
-            
-            if (mainIndex !== -1) {
-              links.splice(mainIndex, 1)
-            }
-            
-            // Remove from our tracking array too
-            currentNonUserLinks.splice(indexToRemove, 1)
+      // Connect some tools to each other
+      if (toolNodes.length > 1) {
+        const connectionCount = Math.floor(Math.random() * 3) + 1 // 1-3 connections
+        for (let i = 0; i < connectionCount; i++) {
+          const source = toolNodes[Math.floor(Math.random() * toolNodes.length)]
+          const target = toolNodes[Math.floor(Math.random() * toolNodes.length)]
+          
+          if (source.id !== target.id) {
+            links.push({
+              source: source.id,
+              target: target.id,
+              clusterId
+            })
           }
         }
       }
       
-      // Add 2 new random connections (reduced from 5)
-      const numToAdd = 2; // Reduced from 5
+      // Assign colors to nodes
+      nodes.forEach(node => {
+        if (!node.color) {
+          node.color = getIconColor(node.icon)
+        }
+      })
       
-      // Filter out connections that already exist
-      const possibleNewLinks = allPossibleLinks.filter(newLink => 
-        !links.some(existingLink => 
-          (existingLink.source === newLink.source && existingLink.target === newLink.target) ||
-          (existingLink.source === newLink.target && existingLink.target === newLink.source)
-        )
-      )
+      return clusterId
+    }
+    
+    // Function to remove a cluster
+    const removeCluster = (clusterId: number) => {
+      // Find all nodes in this cluster
+      const clusterNodeIds = nodes
+        .filter(node => node.clusterId === clusterId)
+        .map(node => node.id)
       
-      // Add new random connections
-      for (let i = 0; i < numToAdd && possibleNewLinks.length > 0; i++) {
-        const randomIndex = Math.floor(Math.random() * possibleNewLinks.length)
-        links.push(possibleNewLinks[randomIndex])
-        possibleNewLinks.splice(randomIndex, 1)
+      // Remove all links in this cluster
+      for (let i = links.length - 1; i >= 0; i--) {
+        if (links[i].clusterId === clusterId) {
+          links.splice(i, 1)
+        }
       }
       
-      // Update the visualization
-      svg.select('.links').remove()
-      const linkGroup = svg.append('g')
-        .attr('class', 'links')
-
-      // Clear existing gradients and create new ones
-      svg.select('defs').remove()
-      const defs = svg.append('defs')
+      // Remove all nodes in this cluster
+      for (let i = nodes.length - 1; i >= 0; i--) {
+        if (nodes[i].clusterId === clusterId) {
+          nodes.splice(i, 1)
+        }
+      }
+      
+      activeClusters.delete(clusterId)
+    }
+    
+    // Function to add a new connection to a cluster
+    const addConnectionToCluster = (clusterId: number) => {
+      const clusterNodes = nodes.filter(node => node.clusterId === clusterId)
+      
+      if (clusterNodes.length < 2) return
+      
+      // Pick two random nodes from the cluster
+      const randomIndex1 = Math.floor(Math.random() * clusterNodes.length)
+      let randomIndex2 = Math.floor(Math.random() * clusterNodes.length)
+      
+      // Make sure we don't pick the same node twice
+      while (randomIndex1 === randomIndex2) {
+        randomIndex2 = Math.floor(Math.random() * clusterNodes.length)
+      }
+      
+      const source = clusterNodes[randomIndex1]
+      const target = clusterNodes[randomIndex2]
+      
+      // Check if this connection already exists
+      const connectionExists = links.some(link => 
+        (link.source === source.id && link.target === target.id) ||
+        (link.source === target.id && link.target === source.id)
+      )
+      
+      if (!connectionExists) {
+        links.push({
+          source: source.id,
+          target: target.id,
+          clusterId
+        })
+      }
+    }
+    
+    // Function to remove connections from a cluster
+    const removeConnectionsFromCluster = (clusterId: number, count: number) => {
+      const clusterLinks = links.filter(link => link.clusterId === clusterId)
+      
+      if (clusterLinks.length <= count) return
+      
+      // Remove random connections
+      for (let i = 0; i < count; i++) {
+        if (clusterLinks.length === 0) break
+        
+        const randomIndex = Math.floor(Math.random() * clusterLinks.length)
+        const linkToRemove = clusterLinks[randomIndex]
+        
+        // Find and remove this link from the main links array
+        const mainIndex = links.findIndex(
+          link => link.source === linkToRemove.source && link.target === linkToRemove.target
+        )
+        
+        if (mainIndex !== -1) {
+          links.splice(mainIndex, 1)
+        }
+        
+        // Remove from our tracking array too
+        clusterLinks.splice(randomIndex, 1)
+      }
+    }
+    
+    // Create initial clusters
+    for (let i = 0; i < 5; i++) {
+      createCluster()
+    }
+    
+    // Create a simulation with forces
+    const simulation = d3.forceSimulation<Node>(nodes)
+      .force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(100))
+      .force('charge', d3.forceManyBody().strength(-300))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('collision', d3.forceCollide().radius(40))
+      .force('x', d3.forceX(width / 2).strength(0.01))
+      .force('y', d3.forceY(height / 2).strength(0.01))
+      .alphaTarget(0.1)
+      .alphaDecay(0.02)
+    
+    // Function to update the visualization
+    const updateVisualization = () => {
+      // Update links
+      const link = linkGroup.selectAll('line')
+        .data(links, (d: any) => `${d.source}-${d.target}`)
+      
+      // Remove old links
+      link.exit().remove()
+      
+      // Add new links
+      const linkEnter = link.enter().append('line')
+        .attr('class', 'link')
+        .style('stroke', (d: any) => {
+          const source = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source)
+          const target = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target)
+          
+          if (!source || !target) return '#ccc'
+          
+          // Use a gradient of the two node colors, or default to a light gray
+          return source.color && target.color ? 
+            `url(#gradient-${source.id}-${target.id})` : 
+            '#ccc'
+        })
+        .style('stroke-opacity', 0.15)
+        .style('stroke-width', 1)
+      
+      // Merge enter and update selections
+      const linkMerge = linkEnter.merge(link as any)
+      
+      // Update gradients
+      defs.selectAll('*').remove()
       
       links.forEach((d: any) => {
-        const source = nodes.find(n => n.id === d.source) || nodes[0]
-        const target = nodes.find(n => n.id === d.target) || nodes[0]
+        const source = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source)
+        const target = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target)
+        
+        if (!source || !target) return
         
         if (source.color && target.color) {
           const gradient = defs.append('linearGradient')
@@ -915,39 +477,306 @@ export default function ForceGraph() {
           gradient.append('stop')
             .attr('offset', '0%')
             .attr('stop-color', source.color)
+            .attr('stop-opacity', 0.4)
             
           gradient.append('stop')
             .attr('offset', '100%')
             .attr('stop-color', target.color)
+            .attr('stop-opacity', 0.4)
         }
       })
-
-      // Recreate the links
-      const link = linkGroup.selectAll('line')
-        .data(links)
-        .enter().append('line')
-        .attr('class', 'link')
-        .style('stroke', (d: any) => {
-          const source = nodes.find(n => n.id === d.source) || nodes[0]
-          const target = nodes.find(n => n.id === d.target) || nodes[0]
-          // Use a gradient of the two node colors, or default to a light gray
-          return source.color && target.color ? 
-            `url(#gradient-${source.id}-${target.id})` : 
-            '#ccc'
-        })
-        .style('stroke-opacity', 0.15)
-        .style('stroke-width', 1)
       
-      // Update the simulation
-      simulation.force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(350))
-      simulation.alpha(0.2).restart() // Reduced from 0.5
+      // Update nodes
+      const node = nodeGroup.selectAll('.node-group')
+        .data(nodes, (d: any) => d.id)
       
-      // Make sure the tick function knows about the new links
+      // Remove old nodes
+      node.exit().remove()
+      
+      // Add new nodes
+      const nodeEnter = node.enter().append('g')
+        .attr('class', 'node-group')
+        .call(d3.drag<SVGGElement, Node>()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended) as any)
+      
+      // Add circles to each node
+      nodeEnter.append('circle')
+        .attr('class', 'node')
+        .attr('r', d => d.isCore ? 30 : 25)
+        .style('fill', d => d.color ? `${d.color}15` : '#f0f0f015')
+        .style('fill-opacity', 0.15)
+        .style('stroke', d => d.color ? d.color : '#ddd')
+        .style('stroke-opacity', d => d.isCore ? 0.3 : 0.2)
+        .style('stroke-width', d => d.isCore ? 1.5 : 1)
+        .style('cursor', 'grab')
+        .style('filter', 'drop-shadow(0px 0px 3px rgba(255, 255, 255, 0.1))')
+      
+      // Add a subtle glow effect
+      nodeEnter.append('circle')
+        .attr('r', d => d.isCore ? 33 : 28)
+        .style('fill', 'none')
+        .style('stroke', d => d.color ? d.color : '#ddd')
+        .style('stroke-opacity', d => d.isCore ? 0.08 : 0.05)
+        .style('stroke-width', 3)
+        .style('filter', 'blur(3px)')
+      
+      // Add icons to each node
+      nodeEnter.each(function(d) {
+        const iconGroup = d3.select(this)
+        
+        // Create a foreignObject to embed React Icons
+        const fo = iconGroup.append('foreignObject')
+          .attr('width', 40)
+          .attr('height', 40)
+          .attr('x', -20)
+          .attr('y', -20)
+          .style('pointer-events', 'none')
+        
+        // Create a div inside the foreignObject
+        const div = fo.append('xhtml:div')
+          .style('width', '100%')
+          .style('height', '100%')
+          .style('display', 'flex')
+          .style('align-items', 'center')
+          .style('justify-content', 'center')
+        
+        // Create a div for the icon
+        const iconElement = document.createElement('div')
+        iconElement.style.color = d.color || 'rgba(85, 85, 85, 0.2)'
+        iconElement.style.fontSize = d.isCore ? '24px' : '22px'
+        iconElement.style.opacity = d.isCore ? '0.5' : '0.4'
+        
+        // Map icon names to React Icons components
+        let iconSvg
+        switch(d.icon) {
+          case 'database':
+            iconSvg = renderToStaticMarkup(<FaDatabase />)
+            break
+          case 'calendar':
+            iconSvg = renderToStaticMarkup(<FaCalendar />)
+            break
+          case 'tools':
+            iconSvg = renderToStaticMarkup(<FaTools />)
+            break
+          case 'globe':
+            iconSvg = renderToStaticMarkup(<FaGlobe />)
+            break
+          case 'robot':
+            iconSvg = renderToStaticMarkup(<FaRobot />)
+            break
+          case 'server':
+            iconSvg = renderToStaticMarkup(<FaServer />)
+            break
+          case 'chart':
+            iconSvg = renderToStaticMarkup(<FaChartLine />)
+            break
+          case 'user':
+            iconSvg = renderToStaticMarkup(<FaUser />)
+            break
+          case 'mobile':
+            iconSvg = renderToStaticMarkup(<FaMobile />)
+            break
+          case 'cloud':
+            iconSvg = renderToStaticMarkup(<FaCloud />)
+            break
+          case 'api':
+            iconSvg = renderToStaticMarkup(<FaCode />)
+            break
+          case 'display':
+            iconSvg = renderToStaticMarkup(<FaDesktop />)
+            break
+          case 'chatbot':
+            iconSvg = renderToStaticMarkup(<FaComments />)
+            break
+          case 'map':
+            iconSvg = renderToStaticMarkup(<FaMap />)
+            break
+          case 'camera':
+            iconSvg = renderToStaticMarkup(<FaCamera />)
+            break
+          case 'car':
+            iconSvg = renderToStaticMarkup(<FaCar />)
+            break
+          case 'users':
+            iconSvg = renderToStaticMarkup(<FaUsers />)
+            break
+          case 'document':
+            iconSvg = renderToStaticMarkup(<FaFileAlt />)
+            break
+          case 'search':
+            iconSvg = renderToStaticMarkup(<FaSearch />)
+            break
+          case 'microphone':
+            iconSvg = renderToStaticMarkup(<FaMicrophone />)
+            break
+          case 'tree':
+            iconSvg = renderToStaticMarkup(<FaTree />)
+            break
+          case 'waves':
+            iconSvg = renderToStaticMarkup(<FaWater />)
+            break
+          case 'health':
+            iconSvg = renderToStaticMarkup(<FaHeartbeat />)
+            break
+          case 'map-marker':
+            iconSvg = renderToStaticMarkup(<FaMapMarkerAlt />)
+            break
+          case 'cart':
+            iconSvg = renderToStaticMarkup(<FaShoppingCart />)
+            break
+          case 'church':
+            iconSvg = renderToStaticMarkup(<FaChurch />)
+            break
+          case 'translate':
+            iconSvg = renderToStaticMarkup(<FaLanguage />)
+            break
+          case 'image':
+            iconSvg = renderToStaticMarkup(<FaImage />)
+            break
+          case 'heart':
+            iconSvg = renderToStaticMarkup(<FaHeart />)
+            break
+          case 'hotel':
+            iconSvg = renderToStaticMarkup(<FaHotel />)
+            break
+          case 'train':
+            iconSvg = renderToStaticMarkup(<FaTrain />)
+            break
+          case 'cap':
+            iconSvg = renderToStaticMarkup(<FaGraduationCap />)
+            break
+          case 'bus':
+            iconSvg = renderToStaticMarkup(<FaBus />)
+            break
+          case 'shield':
+            iconSvg = renderToStaticMarkup(<FaShieldAlt />)
+            break
+          case 'wifi':
+            iconSvg = renderToStaticMarkup(<FaWifi />)
+            break
+          case 'controller':
+            iconSvg = renderToStaticMarkup(<FaGamepad />)
+            break
+          case 'satellite':
+            iconSvg = renderToStaticMarkup(<FaSatellite />)
+            break
+          case 'fingerprint':
+            iconSvg = renderToStaticMarkup(<FaFingerprint />)
+            break
+          case 'lock':
+            iconSvg = renderToStaticMarkup(<FaLock />)
+            break
+          case 'healthcare':
+            iconSvg = renderToStaticMarkup(<FaHospital />)
+            break
+          case 'airplane':
+            iconSvg = renderToStaticMarkup(<FaPlane />)
+            break
+          case 'book':
+            iconSvg = renderToStaticMarkup(<FaBook />)
+            break
+          case 'cross':
+            iconSvg = renderToStaticMarkup(<FaCross />)
+            break
+          case 'plane':
+            iconSvg = renderToStaticMarkup(<FaPlane />)
+            break
+          case 'money':
+            iconSvg = renderToStaticMarkup(<FaMoneyBill />)
+            break
+          case 'bank':
+            iconSvg = renderToStaticMarkup(<FaUniversity />)
+            break
+          case 'utensils':
+            iconSvg = renderToStaticMarkup(<FaUtensils />)
+            break
+          case 'currency':
+            iconSvg = renderToStaticMarkup(<FaDollarSign />)
+            break
+          case 'pharmacy':
+            iconSvg = renderToStaticMarkup(<FaPrescriptionBottleAlt />)
+            break
+          case 'hospital':
+            iconSvg = renderToStaticMarkup(<FaHospital />)
+            break
+          case 'construction':
+            iconSvg = renderToStaticMarkup(<FaHardHat />)
+            break
+          case 'weather':
+            iconSvg = renderToStaticMarkup(<FaCloudSun />)
+            break
+          case 'mountain':
+            iconSvg = renderToStaticMarkup(<FaMountain />)
+            break
+          case 'dog':
+            iconSvg = renderToStaticMarkup(<FaDog />)
+            break
+          case 'cat':
+            iconSvg = renderToStaticMarkup(<FaCat />)
+            break
+          case 'bird':
+            iconSvg = renderToStaticMarkup(<FaDove />)
+            break
+          case 'chef-hat':
+            iconSvg = renderToStaticMarkup(<FaUtensils />)  // Using utensils as substitute
+            break
+          case 'dumbbells':
+            iconSvg = renderToStaticMarkup(<FaDumbbell />)
+            break
+          case 'idea':
+            iconSvg = renderToStaticMarkup(<FaLightbulb />)
+            break
+          case 'star':
+            iconSvg = renderToStaticMarkup(<FaStar />)
+            break
+          case 'facebook':
+            iconSvg = renderToStaticMarkup(<FaFacebook />)
+            break
+          case 'github':
+            iconSvg = renderToStaticMarkup(<FaGithub />)
+            break
+          case 'tiktok':
+            iconSvg = renderToStaticMarkup(<FaTiktok />)
+            break
+          case 'twitter':
+            iconSvg = renderToStaticMarkup(<FaTwitter />)
+            break
+          case 'ai':
+            iconSvg = renderToStaticMarkup(<FaRobot />)  // Using robot icon for AI
+            break
+          case 'google':
+            iconSvg = renderToStaticMarkup(<FaGoogle />)
+            break
+          case 'linkedin':
+            iconSvg = renderToStaticMarkup(<FaLinkedin />)
+            break
+          case 'instagram':
+            iconSvg = renderToStaticMarkup(<FaInstagram />)
+            break
+          default:
+            iconSvg = renderToStaticMarkup(<FaGlobe />)
+        }
+        
+        iconElement.innerHTML = iconSvg
+        const divNode = div.node() as HTMLElement
+        if (divNode) {
+          divNode.appendChild(iconElement)
+        }
+      })
+      
+      // Merge enter and update selections
+      const nodeMerge = nodeEnter.merge(node as any)
+      
+      // Update the simulation on tick
       simulation.on('tick', () => {
         // Update gradients as nodes move
         links.forEach((d: any) => {
-          const source = d.source as unknown as Node
-          const target = d.target as unknown as Node
+          const source = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source)
+          const target = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target)
+          
+          if (!source || !target) return
           
           if (source.color && target.color) {
             svg.select(`#gradient-${source.id}-${target.id}`)
@@ -958,10 +787,13 @@ export default function ForceGraph() {
           }
         })
         
-        svg.selectAll('line')
+        // Calculate line endpoints to stop at node boundaries
+        linkMerge
           .attr('x1', (d: any) => {
-            const source = d.source as unknown as Node
-            const target = d.target as unknown as Node
+            const source = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source)
+            const target = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target)
+            
+            if (!source || !target) return 0
             
             // Get the direction vector
             const dx = target.x! - source.x!
@@ -972,12 +804,14 @@ export default function ForceGraph() {
             if (dr === 0) return source.x!
             
             // Calculate the point on the edge of the source node
-            // 30 is the node radius
-            return source.x! + dx * 30 / dr
+            const radius = source.isCore ? 30 : 25
+            return source.x! + dx * radius / dr
           })
           .attr('y1', (d: any) => {
-            const source = d.source as unknown as Node
-            const target = d.target as unknown as Node
+            const source = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source)
+            const target = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target)
+            
+            if (!source || !target) return 0
             
             const dx = target.x! - source.x!
             const dy = target.y! - source.y!
@@ -985,11 +819,14 @@ export default function ForceGraph() {
             
             if (dr === 0) return source.y!
             
-            return source.y! + dy * 30 / dr
+            const radius = source.isCore ? 30 : 25
+            return source.y! + dy * radius / dr
           })
           .attr('x2', (d: any) => {
-            const source = d.source as unknown as Node
-            const target = d.target as unknown as Node
+            const source = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source)
+            const target = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target)
+            
+            if (!source || !target) return 0
             
             const dx = source.x! - target.x!
             const dy = source.y! - target.y!
@@ -997,11 +834,14 @@ export default function ForceGraph() {
             
             if (dr === 0) return target.x!
             
-            return target.x! + dx * 30 / dr
+            const radius = target.isCore ? 30 : 25
+            return target.x! + dx * radius / dr
           })
           .attr('y2', (d: any) => {
-            const source = d.source as unknown as Node
-            const target = d.target as unknown as Node
+            const source = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source)
+            const target = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target)
+            
+            if (!source || !target) return 0
             
             const dx = source.x! - target.x!
             const dy = source.y! - target.y!
@@ -1009,24 +849,93 @@ export default function ForceGraph() {
             
             if (dr === 0) return target.y!
             
-            return target.y! + dy * 30 / dr
+            const radius = target.isCore ? 30 : 25
+            return target.y! + dy * radius / dr
           })
-
-        node
+        
+        nodeMerge
           .attr('transform', d => `translate(${d.x}, ${d.y})`)
       })
+      
+      // Update the simulation with new nodes and links
+      simulation.nodes(nodes)
+      simulation.force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(100))
+      simulation.alpha(0.3).restart()
     }
-
-    // Change connections every 3 seconds
-    const connectionInterval = setInterval(changeConnections, 3000)
-
+    
+    // Initial visualization update
+    updateVisualization()
+    
+    // Function to evolve the network
+    const evolveNetwork = () => {
+      // For each active cluster
+      activeClusters.forEach(clusterId => {
+        // Add a new connection
+        addConnectionToCluster(clusterId)
+        
+        // Remove 2 connections
+        removeConnectionsFromCluster(clusterId, 2)
+      })
+      
+      // Randomly remove a cluster and create a new one
+      if (Math.random() < 0.1) { // 10% chance each second
+        if (activeClusters.size > 0) {
+          // Pick a random cluster to remove
+          const clusterArray = Array.from(activeClusters)
+          const clusterToRemove = clusterArray[Math.floor(Math.random() * clusterArray.length)]
+          
+          removeCluster(clusterToRemove)
+          createCluster()
+        }
+      }
+      
+      // Ensure we always have 5 clusters
+      while (activeClusters.size < 5) {
+        createCluster()
+      }
+      
+      // Update the visualization
+      updateVisualization()
+    }
+    
+    // Evolve the network every second
+    const evolutionInterval = setInterval(evolveNetwork, 1000)
+    
+    // Drag functions
+    function dragstarted(event: d3.D3DragEvent<SVGGElement, Node, Node>) {
+      if (!event.active) simulation.alphaTarget(0.3).restart()
+      event.subject.fx = event.subject.x
+      event.subject.fy = event.subject.y
+    }
+    
+    function dragged(event: d3.D3DragEvent<SVGGElement, Node, Node>) {
+      event.subject.fx = event.x
+      event.subject.fy = event.y
+    }
+    
+    function dragended(event: d3.D3DragEvent<SVGGElement, Node, Node>) {
+      if (!event.active) simulation.alphaTarget(0)
+      event.subject.fx = null
+      event.subject.fy = null
+    }
+    
+    // Handle window resize
+    const handleResize = () => {
+      const width = window.innerWidth
+      const height = window.innerHeight
+      
+      svg.attr('width', width).attr('height', height)
+      simulation.force('center', d3.forceCenter(width / 2, height / 2))
+      simulation.alpha(0.3).restart()
+    }
+    
+    window.addEventListener('resize', handleResize)
+    
     // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize)
       simulation.stop()
-      clearInterval(movementInterval)
-      clearInterval(shakeInterval)
-      clearInterval(connectionInterval)
+      clearInterval(evolutionInterval)
     }
   }, [])
 
