@@ -1,16 +1,18 @@
 "use client"
 
 import { useState } from "react"
-import { Send, Globe, Hotel, Calendar, ShoppingCart, LucideHotel } from "lucide-react"
+import { Send, Globe, Hotel, Calendar, ShoppingCart, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ChatMessage from "@/components/chat-message"
+import { cn } from "@/lib/utils"
 
 interface ChatInterfaceProps {
   isDrawerOpen: boolean
+  onOpenDrawer: () => void
 }
 
-export default function ChatInterface({ isDrawerOpen }: ChatInterfaceProps) {
+export default function ChatInterface({ isDrawerOpen, onOpenDrawer }: ChatInterfaceProps) {
   const [messages, setMessages] = useState([
     { role: "assistant", content: "Hi there! I'm an AI assistant. How can I help you today?" },
   ])
@@ -46,52 +48,72 @@ export default function ChatInterface({ isDrawerOpen }: ChatInterfaceProps) {
 
   return (
     <div
-      className={`flex flex-col h-full transition-all duration-300 ease-in-out bg-[#f5f5f7] p-4 ${
+      className={`flex flex-col h-full transition-all duration-300 ease-in-out bg-[#f5f5f7] p-2 ${
         isDrawerOpen ? "hidden" : "block w-full"
       }`}
     >
       {/* Agent Selection Header */}
-      <div className="bg-[#f5f5f7] mb-4">
-        <div className="w-10"></div>
-        <div className="flex-1 flex justify-center">
-          <div className="flex space-x-20">
-            <Button
-              variant={activeAgent === "website" ? "default" : "ghost"}
-              size="icon"
-              onClick={() => changeAgent("website")}
-              className="rounded-full"
-              aria-label="Website Agent"
-            >
-              <Globe className="h-6 w-6" />
-            </Button>
-            <Button
-              variant={activeAgent === "concierge" ? "default" : "ghost"}
-              size="icon"
-              onClick={() => changeAgent("concierge")}
-              className="rounded-full"
-              aria-label="Hotel Concierge Agent"
-            >
-              <Hotel className="h-5 w-5" />
-            </Button>
-            <Button
-              variant={activeAgent === "scheduler" ? "default" : "ghost"}
-              size="icon"
-              onClick={() => changeAgent("scheduler")}
-              className="rounded-full"
-              aria-label="Scheduler Agent"
-            >
-              <Calendar className="h-5 w-5" />
-            </Button>
-            <Button
-              variant={activeAgent === "seller" ? "default" : "ghost"}
-              size="icon"
-              onClick={() => changeAgent("seller")}
-              className="rounded-full"
-              aria-label="Seller Agent"
-            >
-              <ShoppingCart className="h-5 w-5" />
-            </Button>
-          </div>
+      <div className="bg-[#f5f5f7] mb-3 py-3 pb-2 flex items-center justify-center">
+        <div className="flex space-x-16 relative w-full justify-center">
+          <Button
+            variant={activeAgent === "website" ? "default" : "ghost"}
+            size="icon"
+            onClick={() => changeAgent("website")}
+            className={cn(
+              "rounded-full h-12 w-12 flex items-center justify-center [&>svg]:!w-5 [&>svg]:!h-5",
+              activeAgent !== "website" && "hover:bg-gray-200"
+            )}
+            aria-label="Website Agent"
+          >
+            <Globe strokeWidth={1.5} />
+          </Button>
+          <Button
+            variant={activeAgent === "concierge" ? "default" : "ghost"}
+            size="icon"
+            onClick={() => changeAgent("concierge")}
+            className={cn(
+              "rounded-full h-12 w-12 flex items-center justify-center [&>svg]:!w-5 [&>svg]:!h-5",
+              activeAgent !== "concierge" && "hover:bg-gray-200"
+            )}
+            aria-label="Hotel Concierge Agent"
+          >
+            <Hotel strokeWidth={1.5} />
+          </Button>
+          <Button
+            variant={activeAgent === "scheduler" ? "default" : "ghost"}
+            size="icon"
+            onClick={() => changeAgent("scheduler")}
+            className={cn(
+              "rounded-full h-12 w-12 flex items-center justify-center [&>svg]:!w-5 [&>svg]:!h-5",
+              activeAgent !== "scheduler" && "hover:bg-gray-200"
+            )}
+            aria-label="Scheduler Agent"
+          >
+            <Calendar strokeWidth={1.5} />
+          </Button>
+          <Button
+            variant={activeAgent === "seller" ? "default" : "ghost"}
+            size="icon"
+            onClick={() => changeAgent("seller")}
+            className={cn(
+              "rounded-full h-12 w-12 flex items-center justify-center [&>svg]:!w-5 [&>svg]:!h-5",
+              activeAgent !== "seller" && "hover:bg-gray-200"
+            )}
+            aria-label="Seller Agent"
+          >
+            <ShoppingCart strokeWidth={1.5} />
+          </Button>
+          
+          {/* Open Drawer Button positioned absolutely */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onOpenDrawer}
+            className="rounded-full bg-gray-900 hover:bg-black text-white h-12 w-12 flex items-center justify-center absolute right-7 border-0"
+            aria-label="Open drawer"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
         </div>
       </div>
 
@@ -113,7 +135,7 @@ export default function ChatInterface({ isDrawerOpen }: ChatInterfaceProps) {
               placeholder="Type your message..."
               className="flex-1"
             />
-            <Button type="submit" size="icon">
+            <Button type="submit" size="icon" className="rounded-full">
               <Send className="h-4 w-4" />
             </Button>
           </div>
