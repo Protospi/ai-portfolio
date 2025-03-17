@@ -20,22 +20,17 @@ import {
 } from 'react-icons/fa'
 
 interface Node extends d3.SimulationNodeDatum {
-  id: string
+  id: number
   icon: string
-  x?: number
-  y?: number
   color?: string
-  clusterId: string
-  isCore?: boolean
-  size?: number
+  clusterId: number  // Add cluster ID to track which network a node belongs to
+  isCore?: boolean   // Flag to identify core nodes (users and robots)
 }
 
 interface Link {
-  source: string
-  target: string
-  clusterId: string
-  value?: number
-  color?: string
+  source: number
+  target: number
+  clusterId: number  // Add cluster ID to track which network a link belongs to
 }
 
 // Function to get color based on icon type
@@ -180,7 +175,7 @@ export default function ForceGraph() {
     const links: Link[] = []
     
     // Track active clusters
-    const activeClusters = new Set<string>()
+    const activeClusters = new Set<number>()
     
     // Available icon types for tools (excluding user and robot)
     const toolIcons = [
@@ -206,79 +201,134 @@ export default function ForceGraph() {
       }
     }
     
-    // Function to create a cluster
-    const createCluster = (): { nodes: Node[], links: Link[] } => {
-      const clusterId = Math.random().toString(36).substring(2, 9);
-      const clusterNodes: Node[] = [];
-      const clusterLinks: Link[] = [];
-      const position = getRandomPosition();
-
-      // Create a user node
-      const userNode: Node = {
-        id: `user-${Math.random().toString(36).substring(2, 9)}`,
-        icon: 'user',
-        clusterId,
-        isCore: true,
-        x: position.x + (Math.random() * 50 - 25),
-        y: position.y + (Math.random() * 50 - 25),
-        size: 20, // Increased size for core nodes
-        color: '#4299E1' // Blue color for users
-      };
-      clusterNodes.push(userNode);
-
-      // Create a robot node
-      const robotNode: Node = {
-        id: `robot-${Math.random().toString(36).substring(2, 9)}`,
-        icon: 'robot',
-        clusterId,
-        isCore: true,
-        x: position.x + (Math.random() * 50 - 25),
-        y: position.y + (Math.random() * 50 - 25),
-        size: 18, // Increased size for core nodes
-        color: '#48BB78' // Green color for robots
-      };
-      clusterNodes.push(robotNode);
-
-      // Create tool nodes
-      const toolCount = Math.floor(Math.random() * 3) + 3; // 3-5 tools
+    // Function to create a new cluster
+    const createCluster = () => {
+      const clusterId = Math.floor(Math.random() * 10000) // Random cluster ID
+      activeClusters.add(clusterId)
+      
+      const clusterCenter = getRandomPosition()
+      
+      // Create 1-2 user nodes
+      const userCount = Math.floor(Math.random() * 2) + 1
+      const userNodes: Node[] = []
+      
+      for (let i = 0; i < userCount; i++) {
+        const userNode: Node = {
+          id: nextNodeId++,
+          icon: 'user',
+          clusterId,
+          isCore: true,
+          x: clusterCenter.x + (Math.random() - 0.5) * 50,
+          y: clusterCenter.y + (Math.random() - 0.5) * 50
+        }
+        userNodes.push(userNode)
+        nodes.push(userNode)
+      }
+      
+      // Create 1-3 robot nodes
+      const robotCount = Math.floor(Math.random() * 3) + 1
+      const robotNodes: Node[] = []
+      
+      for (let i = 0; i < robotCount; i++) {
+        const robotNode: Node = {
+          id: nextNodeId++,
+          icon: Math.random() > 0.5 ? 'robot' : 'ai',
+          clusterId,
+          isCore: true,
+          x: clusterCenter.x + (Math.random() - 0.5) * 100,
+          y: clusterCenter.y + (Math.random() - 0.5) * 100
+        }
+        robotNodes.push(robotNode)
+        nodes.push(robotNode)
+      }
+      
+      // Create 5-8 tool nodes
+      const toolCount = Math.floor(Math.random() * 4) + 5 // 5-8 tools
+      const toolNodes: Node[] = []
+      
+      // Shuffle tool icons and pick a subset
+      const shuffledTools = [...toolIcons].sort(() => Math.random() - 0.5).slice(0, toolCount)
+      
       for (let i = 0; i < toolCount; i++) {
         const toolNode: Node = {
-          id: `tool-${Math.random().toString(36).substring(2, 9)}`,
-          icon: toolIcons[Math.floor(Math.random() * toolIcons.length)],
+          id: nextNodeId++,
+          icon: shuffledTools[i],
           clusterId,
-          isCore: false,
-          x: position.x + (Math.random() * 100 - 50),
-          y: position.y + (Math.random() * 100 - 50),
-          size: 12, // Standard size for tool nodes
-          color: '#ED8936' // Orange color for tools
-        };
-        clusterNodes.push(toolNode);
+          x: clusterCenter.x + (Math.random() - 0.5) * 150,
+          y: clusterCenter.y + (Math.random() - 0.5) * 150
+        }
+        toolNodes.push(toolNode)
+        nodes.push(toolNode)
       }
-
-      // Connect user to robot
-      clusterLinks.push({
-        source: userNode.id,
-        target: robotNode.id,
-        clusterId,
-        value: 3, // Stronger connection between core nodes
-        color: `url(#gradient-${userNode.id}-${robotNode.id})` // Will use gradient
-      });
-
-      // Connect robot to one random tool initially
-      const randomTool = clusterNodes.filter(n => !n.isCore)[Math.floor(Math.random() * (clusterNodes.length - 2))];
-      clusterLinks.push({
-        source: robotNode.id,
-        target: randomTool.id,
-        clusterId,
-        value: 2, // Medium strength connection
-        color: `url(#gradient-${robotNode.id}-${randomTool.id})` // Will use gradient
-      });
-
-      return { nodes: clusterNodes, links: clusterLinks };
+      
+      // Create initial connections
+      
+      // Connect users to robots
+      userNodes.forEach(user => {
+        robotNodes.forEach(robot => {
+          links.push({
+            source: user.id,
+            target: robot.id,
+            clusterId
+          })
+        })
+      })
+      
+      // Connect robots to some tools
+      robotNodes.forEach(robot => {
+        // Each robot connects to 2-4 random tools
+        const toolsToConnect = Math.floor(Math.random() * 3) + 2
+        const shuffledToolNodes = [...toolNodes].sort(() => Math.random() - 0.5)
+        
+        for (let i = 0; i < Math.min(toolsToConnect, shuffledToolNodes.length); i++) {
+          links.push({
+            source: robot.id,
+            target: shuffledToolNodes[i].id,
+            clusterId
+          })
+        }
+      })
+      
+      // Connect robots to each other
+      if (robotNodes.length > 1) {
+        for (let i = 0; i < robotNodes.length - 1; i++) {
+          links.push({
+            source: robotNodes[i].id,
+            target: robotNodes[i + 1].id,
+            clusterId
+          })
+        }
+      }
+      
+      // Connect some tools to each other
+      if (toolNodes.length > 1) {
+        const connectionCount = Math.floor(Math.random() * 3) + 1 // 1-3 connections
+        for (let i = 0; i < connectionCount; i++) {
+          const source = toolNodes[Math.floor(Math.random() * toolNodes.length)]
+          const target = toolNodes[Math.floor(Math.random() * toolNodes.length)]
+          
+          if (source.id !== target.id) {
+            links.push({
+              source: source.id,
+              target: target.id,
+              clusterId
+            })
+          }
+        }
+      }
+      
+      // Assign colors to nodes
+      nodes.forEach(node => {
+        if (!node.color) {
+          node.color = getIconColor(node.icon)
+        }
+      })
+      
+      return clusterId
     }
     
     // Function to remove a cluster
-    const removeCluster = (clusterId: string) => {
+    const removeCluster = (clusterId: number) => {
       // Find all nodes in this cluster
       const clusterNodeIds = nodes
         .filter(node => node.clusterId === clusterId)
@@ -302,7 +352,7 @@ export default function ForceGraph() {
     }
     
     // Function to add a new connection to a cluster
-    const addConnectionToCluster = (clusterId: string) => {
+    const addConnectionToCluster = (clusterId: number) => {
       const clusterNodes = nodes.filter(node => node.clusterId === clusterId)
       
       if (clusterNodes.length < 2) return
@@ -335,7 +385,7 @@ export default function ForceGraph() {
     }
     
     // Function to remove connections from a cluster
-    const removeConnectionsFromCluster = (clusterId: string, count: number) => {
+    const removeConnectionsFromCluster = (clusterId: number, count: number) => {
       const clusterLinks = links.filter(link => link.clusterId === clusterId)
       
       if (clusterLinks.length <= count) return
@@ -363,92 +413,116 @@ export default function ForceGraph() {
     
     // Create initial clusters
     for (let i = 0; i < 5; i++) {
-      const { nodes: clusterNodes, links: clusterLinks } = createCluster()
-      nodes.push(...clusterNodes)
-      links.push(...clusterLinks)
+      createCluster()
     }
     
     // Create a simulation with forces
     const simulation = d3.forceSimulation<Node>(nodes)
-      .force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(120))
-      .force('charge', d3.forceManyBody().strength(-400))
+      .force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(100))
+      .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(50))
-      .force('x', d3.forceX(width / 2).strength(0.005))
-      .force('y', d3.forceY(height / 2).strength(0.005))
-      .alphaTarget(0.05)
-      .alphaDecay(0.01)
+      .force('collision', d3.forceCollide().radius(40))
+      .force('x', d3.forceX(width / 2).strength(0.01))
+      .force('y', d3.forceY(height / 2).strength(0.01))
+      .alphaTarget(0.1)
+      .alphaDecay(0.02)
     
     // Function to update the visualization
     const updateVisualization = () => {
-      // Create gradients for links
-      const defs = svg.select('defs');
-      defs.selectAll('*').remove(); // Clear existing gradients
-      
-      links.forEach(link => {
-        const sourceNode = nodes.find(n => n.id === link.source) || { color: '#ccc', id: 'placeholder' };
-        const targetNode = nodes.find(n => n.id === link.target) || { color: '#ccc', id: 'placeholder' };
-        
-        const gradient = defs.append('linearGradient')
-          .attr('id', `gradient-${sourceNode.id}-${targetNode.id}`)
-          .attr('gradientUnits', 'userSpaceOnUse')
-          .attr('x1', (sourceNode as Node).x || 0)
-          .attr('y1', (sourceNode as Node).y || 0)
-          .attr('x2', (targetNode as Node).x || 0)
-          .attr('y2', (targetNode as Node).y || 0);
-          
-        gradient.append('stop')
-          .attr('offset', '0%')
-          .attr('stop-color', sourceNode.color || '#ccc');
-          
-        gradient.append('stop')
-          .attr('offset', '100%')
-          .attr('stop-color', targetNode.color || '#ccc');
-        
-        // Update link color to use gradient
-        link.color = `url(#gradient-${sourceNode.id}-${targetNode.id})`;
-      });
-
       // Update links
-      const link = svg.select('.links')
-        .selectAll('line')
-        .data(links, (d: any) => `${d.source}-${d.target}`);
-
-      link.exit().remove();
-
-      const linkEnter = link.enter()
-        .append('line')
-        .attr('stroke-width', d => d.value || 1)
-        .attr('stroke-opacity', 0.6)
-        .attr('stroke', d => d.color || '#999');
-
+      const link = linkGroup.selectAll('line')
+        .data(links, (d: any) => `${d.source}-${d.target}`)
+      
+      // Remove old links
+      link.exit().remove()
+      
+      // Add new links
+      const linkEnter = link.enter().append('line')
+        .attr('class', 'link')
+        .style('stroke', (d: any) => {
+          const source = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source)
+          const target = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target)
+          
+          if (!source || !target) return '#ccc'
+          
+          // Use a gradient of the two node colors, or default to a light gray
+          return source.color && target.color ? 
+            `url(#gradient-${source.id}-${target.id})` : 
+            '#ccc'
+        })
+        .style('stroke-opacity', 0.15)
+        .style('stroke-width', 1)
+      
+      // Merge enter and update selections
       const linkMerge = linkEnter.merge(link as any)
-        .attr('stroke-width', d => d.value || 1)
-        .attr('stroke', d => d.color || '#999');
-
+      
+      // Update gradients
+      defs.selectAll('*').remove()
+      
+      links.forEach((d: any) => {
+        const source = typeof d.source === 'object' ? d.source : nodes.find(n => n.id === d.source)
+        const target = typeof d.target === 'object' ? d.target : nodes.find(n => n.id === d.target)
+        
+        if (!source || !target) return
+        
+        if (source.color && target.color) {
+          const gradient = defs.append('linearGradient')
+            .attr('id', `gradient-${source.id}-${target.id}`)
+            .attr('gradientUnits', 'userSpaceOnUse')
+            .attr('x1', source.x || 0)
+            .attr('y1', source.y || 0)
+            .attr('x2', target.x || 0)
+            .attr('y2', target.y || 0)
+            
+          gradient.append('stop')
+            .attr('offset', '0%')
+            .attr('stop-color', source.color)
+            .attr('stop-opacity', 0.4)
+            
+          gradient.append('stop')
+            .attr('offset', '100%')
+            .attr('stop-color', target.color)
+            .attr('stop-opacity', 0.4)
+        }
+      })
+      
       // Update nodes
-      const node = svg.select('.nodes')
-        .selectAll('g')
-        .data(nodes, (d: any) => d.id);
-
-      node.exit().remove();
-
-      const nodeEnter = node.enter()
-        .append('g')
-        .attr('class', 'node')
-        .call(d3.drag<any, Node>()
+      const node = nodeGroup.selectAll('.node-group')
+        .data(nodes, (d: any) => d.id)
+      
+      // Remove old nodes
+      node.exit().remove()
+      
+      // Add new nodes
+      const nodeEnter = node.enter().append('g')
+        .attr('class', 'node-group')
+        .call(d3.drag<SVGGElement, Node>()
           .on('start', dragstarted)
           .on('drag', dragged)
-          .on('end', dragended));
-
-      // Add circles for nodes with dynamic sizing based on isCore
+          .on('end', dragended) as any)
+      
+      // Add circles to each node
       nodeEnter.append('circle')
-        .attr('r', d => d.size || (d.isCore ? 15 : 10))
-        .attr('fill', d => d.color || (d.isCore ? '#4299E1' : '#ED8936'))
-        .attr('stroke', '#fff')
-        .attr('stroke-width', 1.5);
-
-      // Add icons
+        .attr('class', 'node')
+        .attr('r', d => d.isCore ? 30 : 25)
+        .style('fill', d => d.color ? `${d.color}15` : '#f0f0f015')
+        .style('fill-opacity', 0.15)
+        .style('stroke', d => d.color ? d.color : '#ddd')
+        .style('stroke-opacity', d => d.isCore ? 0.3 : 0.2)
+        .style('stroke-width', d => d.isCore ? 1.5 : 1)
+        .style('cursor', 'grab')
+        .style('filter', 'drop-shadow(0px 0px 3px rgba(255, 255, 255, 0.1))')
+      
+      // Add a subtle glow effect
+      nodeEnter.append('circle')
+        .attr('r', d => d.isCore ? 33 : 28)
+        .style('fill', 'none')
+        .style('stroke', d => d.color ? d.color : '#ddd')
+        .style('stroke-opacity', d => d.isCore ? 0.08 : 0.05)
+        .style('stroke-width', 3)
+        .style('filter', 'blur(3px)')
+      
+      // Add icons to each node
       nodeEnter.each(function(d) {
         const iconGroup = d3.select(this)
         
@@ -785,7 +859,7 @@ export default function ForceGraph() {
       
       // Update the simulation with new nodes and links
       simulation.nodes(nodes)
-      simulation.force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(120))
+      simulation.force('link', d3.forceLink<Node, Link>(links).id(d => d.id).distance(100))
       simulation.alpha(0.3).restart()
     }
     
@@ -796,34 +870,11 @@ export default function ForceGraph() {
     const evolveNetwork = () => {
       // For each active cluster
       activeClusters.forEach(clusterId => {
-        // Count connections in this cluster
-        const clusterLinks = links.filter(link => link.clusterId === clusterId)
-        const connectionCount = clusterLinks.length
+        // Add a new connection
+        addConnectionToCluster(clusterId)
         
-        // Growth phase: When fewer than 6 connections, add more than remove
-        if (connectionCount < 6) {
-          // Add 2-3 new connections
-          const addCount = Math.floor(Math.random() * 2) + 2 // 2-3 connections
-          for (let i = 0; i < addCount; i++) {
-            addConnectionToCluster(clusterId)
-          }
-          
-          // Remove 1-2 connections
-          const removeCount = Math.floor(Math.random() * 2) + 1 // 1-2 connections
-          removeConnectionsFromCluster(clusterId, removeCount)
-        } 
-        // Shrink phase: When 6 or more connections, remove more than add
-        else {
-          // Remove 2-3 connections
-          const removeCount = Math.floor(Math.random() * 2) + 2 // 2-3 connections
-          removeConnectionsFromCluster(clusterId, removeCount)
-          
-          // Add 1-2 new connections
-          const addCount = Math.floor(Math.random() * 2) + 1 // 1-2 connections
-          for (let i = 0; i < addCount; i++) {
-            addConnectionToCluster(clusterId)
-          }
-        }
+        // Remove 2 connections
+        removeConnectionsFromCluster(clusterId, 2)
       })
       
       // Randomly remove a cluster and create a new one
@@ -834,17 +885,13 @@ export default function ForceGraph() {
           const clusterToRemove = clusterArray[Math.floor(Math.random() * clusterArray.length)]
           
           removeCluster(clusterToRemove)
-          const { nodes: newNodes, links: newLinks } = createCluster()
-          nodes.push(...newNodes)
-          links.push(...newLinks)
+          createCluster()
         }
       }
       
       // Ensure we always have 5 clusters
       while (activeClusters.size < 5) {
-        const { nodes: newNodes, links: newLinks } = createCluster()
-        nodes.push(...newNodes)
-        links.push(...newLinks)
+        createCluster()
       }
       
       // Update the visualization
