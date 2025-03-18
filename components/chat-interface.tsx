@@ -143,7 +143,7 @@ export default function ChatInterface({ isDrawerOpen, onOpenDrawer }: ChatInterf
 
         {/* Input Form */}
         <form onSubmit={handleSendMessage} className="p-4 bg-white">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <Input
               ref={inputRef}
               value={input}
