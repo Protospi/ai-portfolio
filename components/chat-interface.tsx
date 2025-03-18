@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Send, Globe, Hotel, Calendar, ShoppingCart, ChevronRight } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { Send, Globe, Hotel, Calendar, ShoppingCart, ChevronRight, Mic, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import ChatMessage from "@/components/chat-message"
@@ -18,6 +18,21 @@ export default function ChatInterface({ isDrawerOpen, onOpenDrawer }: ChatInterf
   ])
   const [input, setInput] = useState("")
   const [activeAgent, setActiveAgent] = useState("website")
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Focus input field when component mounts initially or when agent changes
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [activeAgent])
+  
+  // Additional effect to ensure focus on initial page load
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [])
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,7 +63,7 @@ export default function ChatInterface({ isDrawerOpen, onOpenDrawer }: ChatInterf
 
   return (
     <div
-      className={`flex flex-col h-full transition-all duration-300 ease-in-out bg-[#f5f5f7] p-2 ${
+      className={`flex flex-col h-full transition-all duration-300 ease-in-out bg-[#f5f5f7] pt-2 pb-6 pl-4 pr-4 ${
         isDrawerOpen ? "hidden" : "block w-full"
       }`}
     >
@@ -109,7 +124,7 @@ export default function ChatInterface({ isDrawerOpen, onOpenDrawer }: ChatInterf
             variant="outline"
             size="icon"
             onClick={onOpenDrawer}
-            className="rounded-full bg-gray-900 hover:bg-black text-white h-12 w-12 flex items-center justify-center absolute right-7 border-0"
+            className="rounded-full bg-gray-900 hover:bg-gray-300 text-white h-11 w-11 flex items-center justify-center absolute right-6 border-0 top-1"
             aria-label="Open drawer"
           >
             <ChevronRight className="h-6 w-6" />
@@ -128,13 +143,35 @@ export default function ChatInterface({ isDrawerOpen, onOpenDrawer }: ChatInterf
 
         {/* Input Form */}
         <form onSubmit={handleSendMessage} className="p-4 bg-white">
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Input
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
               className="flex-1"
             />
+            
+            {/* Mic Button */}
+            <Button 
+              type="button" 
+              size="icon" 
+              className="rounded-full bg-gray-900 hover:bg-gray-800 text-white h-10 w-10 flex-shrink-0"
+              aria-label="Voice input"
+            >
+              <Mic className="h-5 w-5" />
+            </Button>
+            
+            {/* File Upload Button */}
+            <Button 
+              type="button" 
+              size="icon" 
+              className="rounded-full bg-gray-900 hover:bg-gray-800 text-white h-10 w-10 flex-shrink-0"
+              aria-label="Upload file"
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+            
             <Button type="submit" size="icon" className="rounded-full">
               <Send className="h-4 w-4" />
             </Button>
