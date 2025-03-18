@@ -21,7 +21,7 @@ export default function Drawer({ isOpen, onClose }: DrawerProps) {
 
   return (
     <div className="bg-gray-900 text-white h-full w-full absolute inset-0">
-      <div className="h-full flex flex-col py-3">
+      <div className="h-full flex flex-col py-3 pb-4">
         {/* Drawer Header with Navigation */}
         <div className="bg-gray-900 mb-3 py-3 pb-2 flex items-center justify-center">
           <div className="flex space-x-16 relative w-full justify-center">
@@ -87,7 +87,7 @@ export default function Drawer({ isOpen, onClose }: DrawerProps) {
               variant="outline"
               size="icon"
               onClick={onClose}
-              className="rounded-full bg-white hover:bg-gray-100 text-gray-900 h-12 w-12 flex items-center justify-center absolute right-7"
+              className="rounded-full bg-white hover:bg-gray-400 text-gray-900 h-11 w-11 flex items-center justify-center absolute right-10 top-1"
               aria-label="Close drawer"
             >
               <ChevronLeft className="h-6 w-6" />
