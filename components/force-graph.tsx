@@ -450,8 +450,8 @@ export default function ForceGraph() {
             `url(#gradient-${source.id}-${target.id})` : 
             '#ccc'
         })
-        .style('stroke-opacity', 0.15)
-        .style('stroke-width', 1)
+        .style('stroke-opacity', 0.3)
+        .style('stroke-width', 3)
       
       // Merge enter and update selections
       const linkMerge = linkEnter.merge(link as any)
@@ -477,12 +477,12 @@ export default function ForceGraph() {
           gradient.append('stop')
             .attr('offset', '0%')
             .attr('stop-color', source.color)
-            .attr('stop-opacity', 0.4)
+            .attr('stop-opacity', 0.6)
             
           gradient.append('stop')
             .attr('offset', '100%')
             .attr('stop-color', target.color)
-            .attr('stop-opacity', 0.4)
+            .attr('stop-opacity', 0.6)
         }
       })
       
